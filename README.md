@@ -188,3 +188,5 @@ turn on email notifications for new submissions in that same dashboard.
   `DASHBOARD_PASSCODE` checked on every admin request (`lib/auth.js`), no
   sessions/expiry/per-user login. Fine for one admin; revisit if that
   changes.
+#   r i t m a - r e c o r d s  
+ 
