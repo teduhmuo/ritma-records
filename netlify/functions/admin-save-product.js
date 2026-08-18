@@ -36,7 +36,8 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body || '{}');
     const {
       id, title, artist, format, condition, genre, year,
-      price, stock, sku, description, imageBase64, imageContentType
+      price, stock, sku, description, imageBase64, imageContentType,
+      isPreorder, expectedDate
     } = body;
 
     if (!title || !artist || !format || !VALID_FORMATS.includes(format)) {
@@ -78,7 +79,9 @@ exports.handler = async (event) => {
       sku: sku ? String(sku).trim() : null,
       description: description ? String(description).trim() : '',
       img: existing ? existing.img : undefined,
-      imagePath: existing ? existing.imagePath : undefined
+      imagePath: existing ? existing.imagePath : undefined,
+      isPreorder: Boolean(isPreorder),
+      expectedDate: isPreorder && expectedDate ? expectedDate : null
     };
 
     // Save first to get a real id for new products (needed to name the

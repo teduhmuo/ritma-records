@@ -235,6 +235,17 @@
                 <label class="block text-xs font-bold text-stone-700 mb-1.5">SKU <span class="text-stone-400 font-normal">(leave blank to auto-generate)</span></label>
                 <input id="p-sku" type="text" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm">
               </div>
+              <div class="sm:col-span-2 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <label class="flex items-center gap-2 text-xs font-bold text-stone-700">
+                  <input type="checkbox" id="p-preorder" onchange="onPreorderChange()" class="accent-orange-600">
+                  This is a pre-order (not physically in stock yet)
+                </label>
+                <div id="preorder-date-field" class="hidden mt-2">
+                  <label class="block text-xs font-bold text-stone-700 mb-1.5">Expected Availability</label>
+                  <input id="p-expected-date" type="date" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm">
+                  <p class="text-[11px] text-stone-500 mt-1">Shown to customers on the product page and in their order email. Stock above is treated as "pre-order slots" while this is checked.</p>
+                </div>
+              </div>
               <div class="sm:col-span-2">
                 <label class="block text-xs font-bold text-stone-700 mb-1.5">Description</label>
                 <textarea id="p-description" rows="3" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm"></textarea>
@@ -450,7 +461,10 @@
           <table class="w-full text-xs">
             ${(o.items || []).map(i => `
               <tr class="border-b border-stone-100">
-                <td class="py-1.5">${escapeHtml(i.title)} × ${i.qty}</td>
+                <td class="py-1.5">
+                  ${escapeHtml(i.title)} × ${i.qty}
+                  ${i.isPreorder ? `<span class="ml-1 text-[10px] bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded uppercase">Pre-Order${i.expectedDate ? ' · ' + escapeHtml(i.expectedDate) : ''}</span>` : ''}
+                </td>
                 <td class="py-1.5 text-right">${formatMYR(i.price * i.qty)}</td>
               </tr>
             `).join('')}
@@ -527,7 +541,9 @@
         <tr class="hover:bg-stone-50">
           <td class="px-5 py-3"><img src="${p.img}" class="w-12 h-12 object-cover rounded-lg bg-stone-100"></td>
           <td class="px-5 py-3">
-            <p class="font-semibold text-stone-900">${escapeHtml(p.title)}</p>
+            <p class="font-semibold text-stone-900">${escapeHtml(p.title)}
+              ${p.isPreorder ? `<span class="ml-1.5 text-[10px] bg-amber-100 text-amber-700 font-bold px-1.5 py-0.5 rounded uppercase align-middle">Pre-Order</span>` : ''}
+            </p>
             <p class="text-xs text-stone-500">${escapeHtml(p.artist)}</p>
           </td>
           <td class="px-5 py-3 text-stone-600">${escapeHtml(FORMAT_LABELS[p.format] || p.format)}</td>
@@ -539,6 +555,11 @@
           </td>
         </tr>
       `).join('');
+    }
+
+    function onPreorderChange() {
+      const checked = document.getElementById('p-preorder').checked;
+      document.getElementById('preorder-date-field').classList.toggle('hidden', !checked);
     }
 
     function editProduct(id) {
@@ -555,6 +576,9 @@
       document.getElementById('p-stock').value = p.stock;
       document.getElementById('p-sku').value = p.sku || '';
       document.getElementById('p-description').value = p.description || '';
+      document.getElementById('p-preorder').checked = Boolean(p.isPreorder);
+      document.getElementById('p-expected-date').value = p.expectedDate || '';
+      onPreorderChange();
 
       const preview = document.getElementById('photo-preview');
       preview.src = p.img;
@@ -575,6 +599,7 @@
       document.getElementById('product-form-title').textContent = 'Add a Product';
       document.getElementById('cancel-edit-btn').classList.add('hidden');
       document.getElementById('form-status').textContent = '';
+      document.getElementById('preorder-date-field').classList.add('hidden');
     }
 
     document.getElementById('p-photo').addEventListener('change', (e) => {
@@ -628,7 +653,9 @@
           price: document.getElementById('p-price').value,
           stock: document.getElementById('p-stock').value,
           sku: document.getElementById('p-sku').value,
-          description: document.getElementById('p-description').value
+          description: document.getElementById('p-description').value,
+          isPreorder: document.getElementById('p-preorder').checked,
+          expectedDate: document.getElementById('p-expected-date').value || null
         };
 
         if (photoFile) {

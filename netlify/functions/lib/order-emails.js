@@ -19,10 +19,17 @@ function escapeHtml(s) {
 function itemsHtmlRows(items) {
   return items.map(i => `
     <tr>
-      <td style="padding:6px 0;">${escapeHtml(i.title)} &times; ${i.qty}</td>
+      <td style="padding:6px 0;">
+        ${escapeHtml(i.title)} &times; ${i.qty}
+        ${i.isPreorder ? `<br><span style="font-size:11px; color:#b45309; font-weight:bold;">PRE-ORDER${i.expectedDate ? ' — expected ' + escapeHtml(i.expectedDate) : ''}</span>` : ''}
+      </td>
       <td style="padding:6px 0; text-align:right;">${formatMYR(i.price * i.qty)}</td>
     </tr>
   `).join('');
+}
+
+function hasPreorderItems(items) {
+  return items.some(i => i.isPreorder);
 }
 
 function totalsHtmlRows(order) {
@@ -55,6 +62,11 @@ async function sendOrderConfirmationEmail(order) {
     <div style="font-family: Arial, sans-serif; color:#1c1917; max-width:480px; margin:0 auto;">
       <h2 style="color:#ea580c; margin-bottom:4px;">Thanks for your order, ${escapeHtml(order.payer.name)}!</h2>
       <p style="color:#57534e;">Order <strong>${order.orderNumber}</strong> is confirmed.</p>
+      ${hasPreorderItems(order.items) ? `
+        <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:12px; margin:12px 0; font-size:13px; color:#92400e;">
+          <strong>Heads up:</strong> this order includes one or more pre-order items (marked below). Those will ship separately once available — everything else goes out as usual.
+        </div>
+      ` : ''}
       <table style="width:100%; border-collapse:collapse; margin:16px 0; font-size:14px;">
         ${itemsHtmlRows(order.items)}
         ${totalsHtmlRows(order)}
@@ -75,6 +87,11 @@ async function sendAdminNotificationEmail(order) {
   const html = `
     <div style="font-family: Arial, sans-serif; color:#1c1917; max-width:480px; margin:0 auto;">
       <h2 style="color:#ea580c; margin-bottom:4px;">New paid order: ${order.orderNumber}</h2>
+      ${hasPreorderItems(order.items) ? `
+        <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:12px; margin:12px 0; font-size:13px; color:#92400e;">
+          <strong>Contains pre-order item(s)</strong> — hold this order until stock arrives rather than fulfilling immediately.
+        </div>
+      ` : ''}
       <table style="width:100%; border-collapse:collapse; margin:16px 0; font-size:14px;">
         ${itemsHtmlRows(order.items)}
         ${totalsHtmlRows(order)}

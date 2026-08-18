@@ -20,9 +20,11 @@ function renderProducts(items) {
         <span class="absolute top-2 left-2 text-[10px] bg-orange-600 text-white font-black px-2 py-0.5 rounded uppercase shadow-sm">${escapeHtml(p.format)}</span>
         ${p.stock === 0
           ? `<span class="absolute top-2 right-2 text-[10px] bg-stone-900 text-white font-black px-2 py-0.5 rounded uppercase">Sold Out</span>`
-          : p.stock <= 3
-            ? `<span class="absolute top-2 right-2 text-[10px] bg-black/80 text-orange-400 font-black px-2 py-0.5 rounded uppercase border border-orange-600/40">Low stock</span>`
-            : ''}
+          : p.isPreorder
+            ? `<span class="absolute top-2 right-2 text-[10px] bg-amber-500 text-white font-black px-2 py-0.5 rounded uppercase">Pre-Order</span>`
+            : p.stock <= 3
+              ? `<span class="absolute top-2 right-2 text-[10px] bg-black/80 text-orange-400 font-black px-2 py-0.5 rounded uppercase border border-orange-600/40">Low stock</span>`
+              : ''}
       </a>
       <div class="p-4">
         <span class="text-[10px] bg-orange-100 text-orange-700 font-bold px-2 py-0.5 rounded uppercase border border-orange-200 inline-block mb-2">${escapeHtml(p.condition)}</span>

@@ -112,7 +112,18 @@ exports.handler = async (event) => {
       }
       const qty = Math.max(1, Number(item.qty) || 1);
       subtotal += product.price * qty;
-      verifiedItems.push({ id: product.id, title: product.title, price: product.price, qty });
+      verifiedItems.push({
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        qty,
+        // Snapshotted at order time, not looked up fresh later — if a
+        // product's pre-order status or date changes afterward, past
+        // orders should still show what was true when the customer
+        // actually bought it.
+        isPreorder: Boolean(product.isPreorder),
+        expectedDate: product.isPreorder ? product.expectedDate : null
+      });
     }
     const shippingFee = deliveryMethod === 'shipping' ? SHIPPING_FEE : 0;
     const amount = Number((subtotal + shippingFee).toFixed(2));

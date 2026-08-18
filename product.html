@@ -138,16 +138,25 @@
         </div>
         <div>
           <span class="text-[10px] bg-orange-600 text-white font-black px-2 py-0.5 rounded uppercase shadow-sm inline-block mb-3">${escapeHtml(product.format)}</span>
+          ${product.isPreorder ? `<span class="text-[10px] bg-amber-500 text-white font-black px-2 py-0.5 rounded uppercase shadow-sm inline-block mb-3 ml-1">Pre-Order</span>` : ''}
           <p class="text-xs text-stone-500 font-bold uppercase tracking-wide mb-1">${escapeHtml(product.artist)} · ${escapeHtml(product.year)}</p>
           <h1 class="text-3xl font-bold text-stone-900 mb-4">${escapeHtml(product.title)}</h1>
           <span class="text-[10px] bg-orange-100 text-orange-700 font-bold px-2 py-0.5 rounded uppercase border border-orange-200 inline-block mb-4">${escapeHtml(product.condition)}</span>
           <p class="text-stone-600 text-sm leading-relaxed mb-6">${escapeHtml(product.description)}</p>
 
+          ${product.isPreorder ? `
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 text-sm text-amber-800">
+              <i class="fa-solid fa-clock mr-1.5"></i>
+              <strong>This is a pre-order.</strong>
+              ${product.expectedDate ? `Expected to ship around ${escapeHtml(new Date(product.expectedDate + 'T00:00:00').toLocaleDateString('en-MY', { day: 'numeric', month: 'long', year: 'numeric' }))}.` : 'Ships once available — we\'ll keep you posted by email.'}
+            </div>
+          ` : ''}
+
           <div class="flex items-center gap-6 text-xs text-stone-500 mb-6">
             <span><i class="fa-solid fa-tag text-orange-500 mr-1"></i> SKU: ${escapeHtml(product.sku)}</span>
             <span><i class="fa-solid fa-record-vinyl text-orange-500 mr-1"></i> ${escapeHtml(product.genre)}</span>
             <span class="${product.stock <= 3 ? 'text-orange-600 font-bold' : ''}">
-              <i class="fa-solid fa-boxes-stacked mr-1"></i> ${product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+              <i class="fa-solid fa-boxes-stacked mr-1"></i> ${product.stock > 0 ? `${product.stock} ${product.isPreorder ? 'pre-order slots left' : 'in stock'}` : (product.isPreorder ? 'Pre-order slots full' : 'Out of stock')}
             </span>
           </div>
 
@@ -162,7 +171,7 @@
               <button onclick="changeQty(1)" class="w-10 h-11 flex items-center justify-center bg-stone-100 hover:bg-stone-200 text-stone-900">+</button>
             </div>
             <button ${product.stock === 0 ? 'disabled' : ''} onclick="addCurrentToCart(${product.id})" class="flex-1 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black py-3.5 rounded-lg uppercase tracking-wider text-xs transition shadow-md shadow-orange-600/30">
-              ${product.stock === 0 ? 'Out of Stock' : 'Add to Crate'}
+              ${product.stock === 0 ? 'Out of Stock' : (product.isPreorder ? 'Pre-Order Now' : 'Add to Crate')}
             </button>
           </div>
         </div>
