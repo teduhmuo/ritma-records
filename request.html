@@ -82,25 +82,25 @@
   </section>
 
   <main class="max-w-2xl mx-auto px-4 py-16 w-full bg-stone-50 flex-1">
-    <form name="item-request" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="space-y-5 bg-white border border-stone-200 rounded-xl p-8 shadow-sm">
+    <form id="request-form" name="item-request" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="space-y-5 bg-white border border-stone-200 rounded-xl p-8 shadow-sm">
       <input type="hidden" name="form-name" value="item-request" />
       <p class="hidden">
-        <label>Don't fill this out if you're human: <input name="bot-field" /></label>
+        <label>Don't fill this out if you're human: <input name="bot-field" id="rq-bot-field" /></label>
       </p>
 
       <div>
         <label class="block text-xs font-bold uppercase tracking-wider text-orange-600 mb-2">Your Name</label>
-        <input required type="text" name="name" class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition" placeholder="Ahmad Zaki" />
+        <input required type="text" name="name" id="rq-name" class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition" placeholder="Ahmad Zaki" />
       </div>
 
       <div>
         <label class="block text-xs font-bold uppercase tracking-wider text-orange-600 mb-2">Email</label>
-        <input required type="email" name="email" class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition" placeholder="you@example.com" />
+        <input required type="email" name="email" id="rq-email" class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition" placeholder="you@example.com" />
       </div>
 
       <div>
         <label class="block text-xs font-bold uppercase tracking-wider text-orange-600 mb-2">Format</label>
-        <select name="format" class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition">
+        <select name="format" id="rq-format" class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition">
           <option value="lp">LP / Vinyl</option>
           <option value="cd">CD</option>
           <option value="cassette">Cassette</option>
@@ -111,17 +111,18 @@
 
       <div>
         <label class="block text-xs font-bold uppercase tracking-wider text-orange-600 mb-2">Artist / Title / Item</label>
-        <input required type="text" name="item" class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition" placeholder="e.g. Tame Impala – Currents (original pressing)" />
+        <input required type="text" name="item" id="rq-item" class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition" placeholder="e.g. Tame Impala – Currents (original pressing)" />
       </div>
 
       <div>
         <label class="block text-xs font-bold uppercase tracking-wider text-orange-600 mb-2">Additional Details</label>
-        <textarea name="details" rows="4" class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition resize-none" placeholder="Condition preference, budget, pressing year, anything else that helps us find it."></textarea>
+        <textarea name="details" id="rq-details" rows="4" class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition resize-none" placeholder="Condition preference, budget, pressing year, anything else that helps us find it."></textarea>
       </div>
 
-      <button type="submit" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-3.5 rounded-lg uppercase tracking-wider text-xs transition shadow-md shadow-orange-600/30">
+      <button type="submit" id="rq-submit-btn" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-3.5 rounded-lg uppercase tracking-wider text-xs transition shadow-md shadow-orange-600/30">
         Submit Request
       </button>
+      <p id="rq-status" class="text-[11px] text-center"></p>
       <p class="text-[11px] text-stone-500 text-center">We'll email you if we manage to track it down — usually within a few days.</p>
     </form>
   </main>
@@ -159,5 +160,50 @@
   </footer>
 
   <script src="js/app.js"></script>
+  <script>
+    document.getElementById('request-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const statusEl = document.getElementById('rq-status');
+      const submitBtn = document.getElementById('rq-submit-btn');
+      const originalLabel = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Sending…';
+      statusEl.textContent = '';
+
+      try {
+        const res = await fetch('/.netlify/functions/submit-message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'request',
+            name: document.getElementById('rq-name').value,
+            email: document.getElementById('rq-email').value,
+            format: document.getElementById('rq-format').value,
+            item: document.getElementById('rq-item').value,
+            details: document.getElementById('rq-details').value,
+            botField: document.getElementById('rq-bot-field').value
+          })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          statusEl.textContent = data.error || 'Something went wrong — please try again.';
+          statusEl.className = 'text-[11px] text-center text-red-600';
+          return;
+        }
+
+        document.getElementById('request-form').reset();
+        statusEl.textContent = "Thanks — we'll email you if we track it down.";
+        statusEl.className = 'text-[11px] text-center text-green-600 font-bold';
+      } catch (err) {
+        console.error('[Ritma] Request submission failed:', err);
+        statusEl.textContent = 'Something went wrong — please try again.';
+        statusEl.className = 'text-[11px] text-center text-red-600';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalLabel;
+      }
+    });
+  </script>
 </body>
 </html>

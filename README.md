@@ -179,20 +179,36 @@ When ready to go live:
 
 ## Contact & Request-Item forms
 
-Both `contact.html` and `request.html` use [Netlify
-Forms](https://docs.netlify.com/manage/forms/setup/) — submissions show up
-in your Netlify dashboard under **Forms**, no backend code required. You can
-turn on email notifications for new submissions in that same dashboard.
+Both `contact.html` and `request.html` submit to Supabase (via
+`submit-message.js`) rather than Netlify Forms — that kept submissions
+locked inside Netlify's own system, invisible to the custom dashboard.
+Now they show up under **`/dashboard` → Messages**, with a "new" count
+badge and a New/Read/Done status you can track per message.
+
+A notification email fires on every submission too — set
+`MESSAGE_NOTIFICATION_EMAIL` in Netlify's environment variables (falls
+back to `ADMIN_NOTIFICATION_EMAIL` if that's not set). Same Resend
+domain-verification caveat as order receipts applies here: until
+ritmarecords.com is verified in Resend, this can only actually deliver to
+whatever email the Resend account itself was signed up with.
+
+Both forms still carry `data-netlify="true"` and the hidden honeypot field
+as a no-JS fallback — if a visitor's JavaScript fails to load for any
+reason, the form still submits somewhere (Netlify's own Forms system)
+rather than silently going nowhere. The honeypot itself is reused for the
+Supabase path too: if that hidden field comes through filled in, the
+submission is silently discarded (looks like success, saves nothing, no
+email) rather than telling a bot it's been caught.
 
 ## Known gaps / next steps
 
 - **No customer accounts or order history** — deliberate, not a gap:
   checkout is guest-only by design (name/phone/email per order), no login.
   `account.html` is still a placeholder page as a result.
-- **Customer receipt emails need a verified Resend domain** — see
-  "Checkout, shipping & order emails" above. Admin notifications work as
-  soon as `RESEND_API_KEY` is set; customer receipts need the extra domain
-  verification step or they'll silently not send.
+- **Customer receipts AND message notifications need a verified Resend
+  domain** — see above. Admin/message notifications work as soon as their
+  respective env vars are set; customer-facing emails need the extra
+  domain verification step or they'll silently not send.
 - **Bayarcash checksum/endpoint need verification** — see above. The
   webhook's status-field detection (`bayarcash-webhook.js`) is also still a
   best guess until a real callback payload has been seen — see the TODOs

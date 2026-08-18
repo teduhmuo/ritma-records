@@ -66,6 +66,10 @@
                 class="tab-btn px-4 py-2.5 text-xs font-bold uppercase tracking-wide border-b-2 border-transparent text-stone-400 hover:text-white transition">
           Products
         </button>
+        <button id="tab-btn-messages" onclick="switchTab('messages')"
+                class="tab-btn px-4 py-2.5 text-xs font-bold uppercase tracking-wide border-b-2 border-transparent text-stone-400 hover:text-white transition">
+          Messages <span id="new-messages-badge" class="hidden ml-1 bg-orange-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">0</span>
+        </button>
       </div>
     </header>
 
@@ -287,7 +291,50 @@
         </div>
       </div>
 
+      <!-- ===================== MESSAGES TAB ===================== -->
+      <div id="tab-messages" class="hidden">
+        <div class="bg-white border border-stone-200 rounded-xl overflow-hidden">
+          <div class="px-5 py-4 border-b border-stone-200 flex items-center justify-between">
+            <h2 class="text-sm font-bold text-stone-900 uppercase tracking-wide">Requests &amp; Contact Messages</h2>
+            <button onclick="loadMessagesTab()" class="text-xs text-stone-500 hover:text-orange-600 transition">
+              <i class="fa-solid fa-arrows-rotate"></i> Refresh
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-stone-50 text-left text-[11px] text-stone-500 uppercase tracking-wide">
+                  <th class="px-5 py-2.5 font-bold">Type</th>
+                  <th class="px-5 py-2.5 font-bold">From</th>
+                  <th class="px-5 py-2.5 font-bold">Preview</th>
+                  <th class="px-5 py-2.5 font-bold">Date</th>
+                  <th class="px-5 py-2.5 font-bold">Status</th>
+                  <th class="px-5 py-2.5 font-bold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="messages-table-body" class="divide-y divide-stone-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </main>
+  </div>
+
+  <!-- MESSAGE DETAIL MODAL -->
+  <div id="message-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="max-w-lg w-full bg-white rounded-xl shadow-2xl max-h-[85vh] overflow-y-auto">
+      <div class="px-6 py-4 border-b border-stone-200 flex items-center justify-between sticky top-0 bg-white">
+        <h3 id="message-modal-title" class="text-sm font-bold text-stone-900 uppercase tracking-wide"></h3>
+        <button onclick="closeMessageModal()" class="text-stone-400 hover:text-stone-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div id="message-modal-body" class="px-6 py-5 text-sm"></div>
+      <div class="px-6 py-4 border-t border-stone-200 flex gap-2">
+        <button onclick="setMessageStatus('new')" class="text-xs px-3 py-1.5 rounded-lg border border-stone-300 hover:bg-stone-100 transition">Mark New</button>
+        <button onclick="setMessageStatus('read')" class="text-xs px-3 py-1.5 rounded-lg border border-stone-300 hover:bg-stone-100 transition">Mark Read</button>
+        <button onclick="setMessageStatus('done')" class="text-xs px-3 py-1.5 rounded-lg bg-orange-600 text-white hover:bg-orange-500 transition">Mark Done</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -337,6 +384,7 @@
       document.getElementById('login-gate').classList.add('hidden');
       document.getElementById('dashboard-app').classList.remove('hidden');
       loadOverview();
+      loadMessagesTab(); // eager, not lazy — powers the "new messages" badge before the tab is even opened
     }
 
     function signOutAndShowGate() {
@@ -351,12 +399,16 @@
     function switchTab(tab) {
       document.getElementById('tab-overview').classList.toggle('hidden', tab !== 'overview');
       document.getElementById('tab-products').classList.toggle('hidden', tab !== 'products');
+      document.getElementById('tab-messages').classList.toggle('hidden', tab !== 'messages');
       document.getElementById('tab-btn-overview').classList.toggle('border-orange-500', tab === 'overview');
       document.getElementById('tab-btn-overview').classList.toggle('text-white', tab === 'overview');
       document.getElementById('tab-btn-overview').classList.toggle('text-stone-400', tab !== 'overview');
       document.getElementById('tab-btn-products').classList.toggle('border-orange-500', tab === 'products');
       document.getElementById('tab-btn-products').classList.toggle('text-white', tab === 'products');
       document.getElementById('tab-btn-products').classList.toggle('text-stone-400', tab !== 'products');
+      document.getElementById('tab-btn-messages').classList.toggle('border-orange-500', tab === 'messages');
+      document.getElementById('tab-btn-messages').classList.toggle('text-white', tab === 'messages');
+      document.getElementById('tab-btn-messages').classList.toggle('text-stone-400', tab !== 'messages');
       if (tab === 'products' && ALL_PRODUCTS.length === 0) loadProductsTab();
     }
 
@@ -717,6 +769,127 @@
       } catch (err) {
         console.error('[Ritma] Delete product failed:', err);
         alert('Something went wrong — try again.');
+      }
+    }
+
+    // ---------- Messages tab ----------
+    let ALL_MESSAGES = [];
+    let CURRENT_MESSAGE_ID = null;
+    const MESSAGE_TYPE_LABELS = { request: 'Request', contact: 'Contact' };
+    const MESSAGE_STATUS_STYLES = {
+      new: 'bg-orange-100 text-orange-700 border-orange-200',
+      read: 'bg-stone-100 text-stone-600 border-stone-200',
+      done: 'bg-green-100 text-green-700 border-green-200'
+    };
+
+    async function loadMessagesTab() {
+      try {
+        const res = await fetch('/.netlify/functions/get-messages', { headers: authHeaders() });
+        if (res.status === 401) return signOutAndShowGate();
+        if (!res.ok) throw new Error(`Request failed (${res.status})`);
+        ALL_MESSAGES = await res.json();
+        renderMessagesTable();
+        updateNewMessagesBadge();
+      } catch (err) {
+        console.error('[Ritma] Could not load messages:', err);
+        const body = document.getElementById('messages-table-body');
+        if (body) body.innerHTML = `<tr><td colspan="6" class="px-5 py-8 text-center text-red-600 text-sm">Couldn't load messages.</td></tr>`;
+      }
+    }
+
+    function updateNewMessagesBadge() {
+      const count = ALL_MESSAGES.filter(m => m.status === 'new').length;
+      const badge = document.getElementById('new-messages-badge');
+      badge.textContent = count;
+      badge.classList.toggle('hidden', count === 0);
+    }
+
+    function messageStatusBadge(status) {
+      return `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${MESSAGE_STATUS_STYLES[status] || ''}">${status}</span>`;
+    }
+
+    function renderMessagesTable() {
+      const body = document.getElementById('messages-table-body');
+      if (ALL_MESSAGES.length === 0) {
+        body.innerHTML = `<tr><td colspan="6" class="px-5 py-8 text-center text-stone-400 text-sm">No requests or messages yet.</td></tr>`;
+        return;
+      }
+      body.innerHTML = ALL_MESSAGES.map(m => {
+        const preview = m.type === 'request' ? m.item : m.message;
+        return `
+          <tr class="hover:bg-stone-50 cursor-pointer" onclick="openMessageModal(${m.id})">
+            <td class="px-5 py-3 text-stone-600">${MESSAGE_TYPE_LABELS[m.type] || m.type}</td>
+            <td class="px-5 py-3">
+              <p class="font-semibold text-stone-900">${escapeHtml(m.name)}</p>
+              <p class="text-xs text-stone-500">${escapeHtml(m.email)}</p>
+            </td>
+            <td class="px-5 py-3 text-stone-600 max-w-xs truncate">${escapeHtml(preview || '')}</td>
+            <td class="px-5 py-3 text-stone-500 text-xs whitespace-nowrap">${new Date(m.createdAt).toLocaleDateString('en-MY')}</td>
+            <td class="px-5 py-3">${messageStatusBadge(m.status)}</td>
+            <td class="px-5 py-3 text-right">
+              <button onclick="event.stopPropagation(); openMessageModal(${m.id})" class="text-xs text-orange-600 hover:underline">View</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openMessageModal(id) {
+      const m = ALL_MESSAGES.find(x => x.id === id);
+      if (!m) return;
+      CURRENT_MESSAGE_ID = id;
+
+      document.getElementById('message-modal-title').textContent = `${MESSAGE_TYPE_LABELS[m.type] || m.type} from ${m.name}`;
+
+      const bodyHtml = m.type === 'request' ? `
+        <p class="mb-1"><strong>Format:</strong> ${escapeHtml(m.format || '—')}</p>
+        <p class="mb-1"><strong>Item:</strong> ${escapeHtml(m.item || '—')}</p>
+        ${m.details ? `<p class="mt-3 text-stone-600 whitespace-pre-wrap">${escapeHtml(m.details)}</p>` : ''}
+      ` : `
+        ${m.orderNumber ? `<p class="mb-1"><strong>Order #:</strong> ${escapeHtml(m.orderNumber)}</p>` : ''}
+        <p class="mt-3 text-stone-600 whitespace-pre-wrap">${escapeHtml(m.message || '')}</p>
+      `;
+
+      document.getElementById('message-modal-body').innerHTML = `
+        <div class="mb-3">${messageStatusBadge(m.status)} <span class="text-stone-400 ml-2 text-xs">${new Date(m.createdAt).toLocaleString('en-MY')}</span></div>
+        <p class="mb-4"><strong>${escapeHtml(m.name)}</strong> — <a href="mailto:${escapeHtml(m.email)}" class="text-orange-600 hover:underline">${escapeHtml(m.email)}</a></p>
+        ${bodyHtml}
+      `;
+      document.getElementById('message-modal').classList.remove('hidden');
+
+      // Viewing it counts as reading it, if it was still marked new.
+      if (m.status === 'new') setMessageStatus('read', /* silent */ true);
+    }
+
+    function closeMessageModal() {
+      document.getElementById('message-modal').classList.add('hidden');
+      CURRENT_MESSAGE_ID = null;
+    }
+
+    async function setMessageStatus(status, silent) {
+      if (!CURRENT_MESSAGE_ID) return;
+      try {
+        const res = await fetch('/.netlify/functions/update-message-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body: JSON.stringify({ id: CURRENT_MESSAGE_ID, status })
+        });
+        if (res.status === 401) return signOutAndShowGate();
+        if (!res.ok) {
+          if (!silent) alert('Could not update status.');
+          return;
+        }
+        const data = await res.json();
+        const idx = ALL_MESSAGES.findIndex(x => x.id === CURRENT_MESSAGE_ID);
+        if (idx !== -1) ALL_MESSAGES[idx] = data.message;
+        renderMessagesTable();
+        updateNewMessagesBadge();
+        if (!silent) {
+          document.getElementById('message-modal-title').scrollIntoView({ behavior: 'smooth' });
+        }
+      } catch (err) {
+        console.error('[Ritma] Update message status failed:', err);
+        if (!silent) alert('Something went wrong — try again.');
       }
     }
 
