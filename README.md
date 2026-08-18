@@ -16,56 +16,55 @@ account.html                Order-status placeholder (no login system yet)
 order-confirmation.html     Landing page after a successful Bayarcash payment
 404.html                    Custom not-found page
 
-data/products.json          Master catalog — edit this to manage titles, price, images
-js/app.js                   Shared cart, product loading, live-stock overlay, checkout logic
+data/products.json          Historical only — Supabase is now the catalog; kept as an
+                             emergency fallback in js/app.js if get-products.js ever fails
+js/app.js                   Shared cart, product loading, checkout logic
 js/catalog.js                Catalog grid rendering + format filters (homepage only)
 
 netlify/functions/create-bayarcash-payment.js   Checks stock, starts a Bayarcash checkout, saves the order
 netlify/functions/bayarcash-webhook.js          Receives payment status updates, decrements stock on paid
-netlify/functions/get-stock.js                  Public endpoint the frontend calls for live stock counts
-netlify/functions/lib/inventory.js              Shared helper: Netlify Blobs stock + order storage
+netlify/functions/get-products.js               Public endpoint the frontend calls for the live catalog
+netlify/functions/lib/supabase.js               Shared Supabase client (uses the secret key — server only)
+netlify/functions/lib/catalog.js                Product + photo storage (Supabase table + Storage bucket)
+netlify/functions/lib/inventory.js              Stock + order storage (Supabase tables)
 netlify.toml                 Netlify build config
 ```
 
 ## Live stock & inventory
 
-Stock now has two layers:
-
-- **`data/products.json`** — the *starting* stock count you set by hand
-  when you add or restock an item. Still the plain-array, no-database file
-  described below.
-- **Netlify Blobs** — the *live* count, decremented automatically by real
-  sales. Nothing to sign up for; Netlify provisions this automatically for
-  every site, same as Functions.
+Stock lives directly on each product's `stock` column in Supabase — no
+separate "seed vs live" layer needed, unlike an earlier version of this
+site that used Netlify Blobs (a plain key-value store with no querying).
 
 How it flows:
 
 1. `netlify/functions/get-products.js` is the public endpoint `js/app.js`
-   calls on every page load — it returns the full catalog (from the
-   `ritma-products` store) with live stock already merged in from
-   `ritma-stock`. The catalog grid, product page, and cart quantity steppers
-   all reflect real availability (sold-out items show a disabled "Sold Out"
-   state, and you can't add more to your crate than what's left).
+   calls on every page load — it returns the full catalog straight from
+   Supabase, stock included. The catalog grid, product page, and cart
+   quantity steppers all reflect real availability (sold-out items show a
+   disabled "Sold Out" state, and you can't add more to your crate than
+   what's left).
 2. When checkout starts, `create-bayarcash-payment.js` re-checks the cart
    against live stock and rejects (HTTP 409, with a clear message) if
    anything changed since the page loaded — before Bayarcash is ever
    contacted.
-3. If Bayarcash accepts the payment intent, the order (order number + line
-   items) is saved to a `ritma-orders` Blob store. **Stock is not
-   decremented yet at this point** — only once payment is confirmed.
+3. If Bayarcash accepts the payment intent, the order (items, computed
+   total, customer + delivery details) is saved to Supabase's `orders`
+   table. **Stock is not decremented yet at this point** — only once
+   payment is confirmed.
 4. `bayarcash-webhook.js` receives the payment result. On a paid status, it
-   looks up the saved order and decrements stock for each item — guarded so
-   a duplicate webhook call (payment gateways commonly retry) won't
-   double-decrement.
+   looks up the saved order and decrements stock via the `decrement_stock`
+   Postgres function (see the schema SQL) — guarded so a duplicate webhook
+   call (payment gateways commonly retry) won't double-decrement.
 
 **Restocking an item:** open `/dashboard` → Products tab → Edit → change
-the Stock number → Save. That sets live stock directly — see "Managing
+the Stock number → Save. That sets stock directly — see "Managing
 products" below.
 
-**Known limitation:** Netlify Blobs has no compare-and-swap, so writes are
-last-write-wins — two simultaneous orders for the very last unit of the
-same item could in theory both succeed. Not worth solving until Ritma's
-order volume makes it a real risk.
+**Concurrency note:** `decrement_stock` runs as a single atomic Postgres
+`UPDATE`, so two simultaneous orders for the same last unit can't both
+succeed the way they theoretically could with the old Blobs-based version.
+One real improvement that came from this migration, not just a side effect.
 
 ## Managing products
 
@@ -74,22 +73,36 @@ type, artist, title, condition, genre, year, price, stock, and description,
 and it appears on the storefront right away. No redeploy needed.
 
 Editing an existing product's stock number also **restocks it live** — the
-form's stock field directly sets what customers see as available, which
-doubles as the "no admin UI for restocking" gap flagged in an earlier
-version of this README.
+form's stock field directly sets what customers see as available.
 
-Under the hood: products live in the `ritma-products` Netlify Blobs store
-(`netlify/functions/lib/catalog.js`), and photos live in `ritma-images`,
-served back through `netlify/functions/product-image.js`. `data/products.json`
-is no longer hand-edited — it's only the **one-time seed** that store copies
-in the very first time it's read (see `getAllProducts()`), so the original 8
-starter records exist purely as history now.
+Under the hood: products live in Supabase's `products` table
+(`netlify/functions/lib/catalog.js`), and photos live in the `ritma-records`
+Storage bucket (public — that's what lets an uploaded photo's URL work
+directly in `<img>` tags with no separate serving function needed).
+`data/products.json` is no longer read by the catalog at all — the store
+starts genuinely empty until products are added through the dashboard.
 
 **Dashboard access:** set a `DASHBOARD_PASSCODE` environment variable in
 Netlify (Project configuration → Environment variables) — without it, the
 dashboard's login and every admin function refuse to work (fails closed,
 not open). This is a single shared passcode, not per-user accounts; fine for
 one admin, not meant to survive a targeted attack. See "Known gaps" below.
+
+## Setting up Supabase
+
+1. Create a Supabase project (separate from any other project — this one's
+   dedicated to Ritma).
+2. Run the schema SQL (ask for the latest version if it's not in this repo)
+   in the SQL Editor — creates the `products` and `orders` tables plus the
+   `decrement_stock` function.
+3. Storage → New bucket → name it `ritma-records` → make it **Public**
+   (photos need to load for anyone browsing, no login).
+4. Settings → API Keys → copy the **secret** key (not the publishable one —
+   the secret key bypasses Row Level Security, which is required since
+   these Functions do all the reading/writing, not the browser directly).
+5. In Netlify: Project configuration → Environment variables, add:
+   - `SUPABASE_URL` (e.g. `https://xxxxx.supabase.co`)
+   - `SUPABASE_SECRET_KEY` — mark this **Contains secret values**
 
 ## Deploying to Netlify
 
@@ -188,5 +201,3 @@ turn on email notifications for new submissions in that same dashboard.
   `DASHBOARD_PASSCODE` checked on every admin request (`lib/auth.js`), no
   sessions/expiry/per-user login. Fine for one admin; revisit if that
   changes.
-#   r i t m a - r e c o r d s  
- 

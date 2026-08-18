@@ -6,3 +6,9 @@
   for = "/data/products.json"
   [headers.values]
     Cache-Control = "public, max-age=300"
+
+# Clean URL for the dashboard: /dashboard instead of /dashboard.html
+[[redirects]]
+  from = "/dashboard"
+  to = "/dashboard.html"
+  status = 200

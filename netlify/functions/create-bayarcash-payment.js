@@ -45,7 +45,7 @@
    stock (netlify/functions/lib/inventory.js) so nobody can pay for more
    than what's actually left. Once Bayarcash accepts the intent, the full
    order (items, computed total, customer + delivery details) is saved to
-   the ritma-orders blob store — the webhook needs that record both to know
+   Supabase's `orders` table — the webhook needs that record both to know
    what to decrement once payment is confirmed, and to send the receipt/
    notification emails with the right details, since Bayarcash's callback
    only carries the order number and status.
