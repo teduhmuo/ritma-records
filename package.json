@@ -1,0 +1,12 @@
+{
+  "name": "ritma-records",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ritma Records — Malaysian analog music & band merch webstore.",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^10.7.12"
+  }
+}

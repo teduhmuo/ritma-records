@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product | Ritma Records</title>
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@0,700;1,600&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fafaf9; color: #1c1917; }
+    .serif-title { font-family: 'Playfair Display', serif; }
+    .sans-hero { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-stone-50">
+
+  <div class="bg-black text-orange-400 font-bold text-xs py-2 px-4 text-center tracking-wider uppercase border-b border-stone-800">
+    🚚 RM15 FLAT SHIPPING & PACKAGING NATIONWIDE, OR FREE SELF-PICKUP IN MUAR | SECURE PAYMENTS VIA BAYARCASH
+  </div>
+
+  <header class="sticky top-0 z-40 bg-orange-600 border-b border-orange-700 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        <a href="index.html" class="flex items-center gap-3">
+          <img src="assets/logo-icon.png" alt="Ritma Records" class="w-11 h-11 object-contain flex-shrink-0">
+          <span class="text-2xl font-extrabold tracking-tight text-white uppercase serif-title">
+            Ritma<span class="text-stone-900 font-sans text-xs tracking-widest block font-bold">RECORDS</span>
+          </span>
+        </a>
+        <nav class="hidden lg:flex items-center space-x-6 text-xs font-bold uppercase tracking-wider text-orange-100">
+          <a href="index.html" class="header-nav-tab pb-1 transition">Home</a>
+          <a href="index.html?filter=new#catalog" class="header-nav-tab pb-1 transition">New Arrival</a>
+          <a href="index.html?filter=preloved#catalog" class="header-nav-tab pb-1 transition">Preloved/used</a>
+          <a href="artist.html" class="header-nav-tab pb-1 transition">Artist</a>
+          <a href="index.html?filter=merch#catalog" class="header-nav-tab pb-1 transition">Merch</a>
+          <a href="request.html" class="header-nav-tab pb-1 transition">Request Item</a>
+          <a href="contact.html" class="header-nav-tab pb-1 transition">Contact Us</a>
+          <a href="account.html" class="header-nav-tab pb-1 transition">My Account/Order</a>
+        </nav>
+        <div class="flex items-center gap-2">
+          <button onclick="toggleCart()" class="relative p-2.5 bg-orange-700/80 hover:bg-black/80 border border-orange-500/50 rounded-full text-white transition">
+            <i class="fa-solid fa-bag-shopping text-lg"></i>
+            <span id="cart-badge" class="absolute -top-1 -right-1 bg-black text-orange-400 font-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center hidden transition-transform">0</span>
+          </button>
+          <button onclick="toggleMobileNav()" class="lg:hidden p-2.5 text-white">
+            <i class="fa-solid fa-bars text-lg"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="mobile-nav" class="lg:hidden hidden border-t border-orange-700 bg-orange-600">
+      <nav class="flex flex-col px-4 py-4 space-y-1 text-xs font-bold uppercase tracking-wider text-orange-100">
+        <a href="index.html" class="header-nav-tab py-2.5 border-b border-orange-700/50">Home</a>
+        <a href="index.html?filter=new#catalog" class="header-nav-tab py-2.5 border-b border-orange-700/50">New Arrival</a>
+        <a href="index.html?filter=preloved#catalog" class="header-nav-tab py-2.5 border-b border-orange-700/50">Preloved/used</a>
+        <a href="artist.html" class="header-nav-tab py-2.5 border-b border-orange-700/50">Artist</a>
+        <a href="index.html?filter=merch#catalog" class="header-nav-tab py-2.5 border-b border-orange-700/50">Merch</a>
+        <a href="request.html" class="header-nav-tab py-2.5 border-b border-orange-700/50">Request Item</a>
+        <a href="contact.html" class="header-nav-tab py-2.5 border-b border-orange-700/50">Contact Us</a>
+        <a href="account.html" class="header-nav-tab py-2.5">My Account/Order</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- BREADCRUMB -->
+  <div class="max-w-7xl mx-auto px-4 pt-6 text-xs text-stone-500">
+    <a href="index.html" class="hover:text-orange-600 transition">Catalog</a>
+    <span class="mx-1">/</span>
+    <span id="breadcrumb-title" class="text-stone-600">Loading…</span>
+  </div>
+
+  <!-- PRODUCT DETAIL -->
+  <main class="max-w-7xl mx-auto px-4 py-10 w-full bg-stone-50 flex-1">
+    <div id="product-detail" class="grid grid-cols-1 md:grid-cols-2 gap-10">
+      <p class="col-span-full text-center text-stone-600 text-sm py-24">Loading product…</p>
+    </div>
+
+    <!-- RELATED PRODUCTS -->
+    <div class="mt-20">
+      <h2 class="text-xl md:text-2xl font-normal text-stone-900 sans-hero tracking-tight flex items-center gap-3 mb-6 border-b border-stone-200 pb-4">
+        <span class="w-2.5 h-6 bg-orange-600 rounded-full inline-block"></span>
+        You Might Also Like
+      </h2>
+      <div id="related-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+    </div>
+  </main>
+
+  <!-- CART SIDEBAR MODAL -->
+  <div id="cart-drawer" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-end hidden">
+    <div class="w-full max-w-md bg-white border-l border-stone-200 flex flex-col h-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-stone-200 pb-4 mb-4">
+        <h3 class="text-lg font-bold text-stone-900 flex items-center gap-2">
+          <i class="fa-solid fa-bag-shopping text-orange-500"></i> Your Crate (<span id="cart-count-title" class="text-orange-500">0</span>)
+        </h3>
+        <button onclick="toggleCart()" class="text-stone-400 hover:text-stone-700 p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <div id="cart-items" class="flex-1 overflow-y-auto space-y-4"></div>
+      <div class="border-t border-stone-200 pt-4 mt-auto">
+        <div class="flex justify-between text-sm mb-2 text-stone-600">
+          <span>Subtotal</span>
+          <span id="cart-subtotal" class="text-orange-600 font-extrabold text-lg">RM 0.00</span>
+        </div>
+        <p class="text-[11px] text-stone-400 mb-4">RM15 shipping nationwide, or free self-pickup in Muar — choose at checkout.</p>
+        <button id="checkout-btn" onclick="goToCheckout()" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-3.5 rounded-lg flex items-center justify-center gap-2 uppercase tracking-wider text-xs transition shadow-md shadow-orange-600/30 disabled:opacity-60">
+          <i class="fa-solid fa-arrow-right"></i> Proceed to Checkout
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-stone-900 border-t border-stone-800 py-8 text-center text-xs text-stone-400">
+    <div class="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-4">
+      <a href="artist.html" class="hover:text-orange-400 transition">Artist</a>
+      <a href="request.html" class="hover:text-orange-400 transition">Request Item</a>
+      <a href="contact.html" class="hover:text-orange-400 transition">Contact Us</a>
+      <a href="account.html" class="hover:text-orange-400 transition">My Account/Order</a>
+    </div>
+    <p>© 2026 Ritma Records. All rights reserved. Muar, Johor, Malaysia.</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script>
+    let currentQty = 1;
+    let currentProduct = null;
+
+    function renderDetail(product) {
+      document.title = `${product.title} — ${product.artist} | Ritma Records`;
+      document.getElementById('breadcrumb-title').innerText = product.title;
+
+      document.getElementById('product-detail').innerHTML = `
+        <div class="rounded-xl overflow-hidden border border-stone-200 bg-white">
+          <img src="${product.img}" alt="${escapeHtml(product.title)}" class="w-full h-full object-cover max-h-[520px]">
+        </div>
+        <div>
+          <span class="text-[10px] bg-orange-600 text-white font-black px-2 py-0.5 rounded uppercase shadow-sm inline-block mb-3">${escapeHtml(product.format)}</span>
+          <p class="text-xs text-stone-500 font-bold uppercase tracking-wide mb-1">${escapeHtml(product.artist)} · ${escapeHtml(product.year)}</p>
+          <h1 class="text-3xl font-bold text-stone-900 mb-4">${escapeHtml(product.title)}</h1>
+          <span class="text-[10px] bg-orange-100 text-orange-700 font-bold px-2 py-0.5 rounded uppercase border border-orange-200 inline-block mb-4">${escapeHtml(product.condition)}</span>
+          <p class="text-stone-600 text-sm leading-relaxed mb-6">${escapeHtml(product.description)}</p>
+
+          <div class="flex items-center gap-6 text-xs text-stone-500 mb-6">
+            <span><i class="fa-solid fa-tag text-orange-500 mr-1"></i> SKU: ${escapeHtml(product.sku)}</span>
+            <span><i class="fa-solid fa-record-vinyl text-orange-500 mr-1"></i> ${escapeHtml(product.genre)}</span>
+            <span class="${product.stock <= 3 ? 'text-orange-600 font-bold' : ''}">
+              <i class="fa-solid fa-boxes-stacked mr-1"></i> ${product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+            </span>
+          </div>
+
+          <div class="flex items-center gap-4 mb-6">
+            <span class="text-orange-600 font-extrabold text-3xl">${formatMYR(product.price)}</span>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <div class="flex items-center border border-stone-200 rounded-lg overflow-hidden">
+              <button onclick="changeQty(-1)" class="w-10 h-11 flex items-center justify-center bg-stone-100 hover:bg-stone-200 text-stone-900">−</button>
+              <span id="qty-display" class="w-10 text-center text-stone-900 font-bold">1</span>
+              <button onclick="changeQty(1)" class="w-10 h-11 flex items-center justify-center bg-stone-100 hover:bg-stone-200 text-stone-900">+</button>
+            </div>
+            <button ${product.stock === 0 ? 'disabled' : ''} onclick="addCurrentToCart(${product.id})" class="flex-1 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black py-3.5 rounded-lg uppercase tracking-wider text-xs transition shadow-md shadow-orange-600/30">
+              ${product.stock === 0 ? 'Out of Stock' : 'Add to Crate'}
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function changeQty(delta) {
+      const maxQty = currentProduct && typeof currentProduct.stock === 'number' ? currentProduct.stock : Infinity;
+      currentQty = Math.max(1, Math.min(currentQty + delta, maxQty || 1));
+      document.getElementById('qty-display').innerText = currentQty;
+    }
+
+    function addCurrentToCart(id) {
+      addToCart(id, currentQty);
+      toggleCart();
+    }
+
+    function renderRelated(product) {
+      const related = PRODUCTS.filter(p => p.id !== product.id && p.format === product.format).slice(0, 4);
+      const grid = document.getElementById('related-grid');
+      if (related.length === 0) {
+        grid.innerHTML = `<p class="col-span-full text-center text-stone-600 text-sm">No related items yet.</p>`;
+        return;
+      }
+      grid.innerHTML = related.map(p => `
+        <a href="product.html?id=${p.id}" class="bg-white border border-stone-200 hover:border-orange-500 rounded-xl overflow-hidden transition group shadow-sm block">
+          <div class="relative overflow-hidden">
+            <img src="${p.img}" alt="${escapeHtml(p.title)}" class="w-full h-40 object-cover group-hover:scale-105 transition duration-300">
+          </div>
+          <div class="p-3">
+            <h3 class="text-xs font-bold text-stone-900 mb-1 line-clamp-1">${escapeHtml(p.title)}</h3>
+            <span class="text-orange-600 font-extrabold text-sm">${formatMYR(p.price)}</span>
+          </div>
+        </a>
+      `).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadProducts();
+      const params = new URLSearchParams(location.search);
+      const id = params.get('id');
+      const product = getProductById(id);
+
+      if (!product) {
+        document.getElementById('product-detail').innerHTML = `
+          <div class="col-span-full text-center py-24">
+            <p class="text-stone-600 text-sm mb-4">We couldn't find that item — it may have sold out or been removed.</p>
+            <a href="index.html" class="text-orange-500 hover:text-orange-400 font-bold text-xs uppercase tracking-wider"><i class="fa-solid fa-arrow-left mr-1"></i> Back to Catalog</a>
+          </div>
+        `;
+        return;
+      }
+
+      currentProduct = product;
+      renderDetail(product);
+      renderRelated(product);
+    });
+  </script>
+</body>
+</html>

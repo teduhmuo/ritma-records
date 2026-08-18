@@ -1,0 +1,8 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[[headers]]
+  for = "/data/products.json"
+  [headers.values]
+    Cache-Control = "public, max-age=300"

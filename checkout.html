@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout | Ritma Records</title>
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@0,700;1,600&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fafaf9; color: #1c1917; }
+    .serif-title { font-family: 'Playfair Display', serif; }
+    .sans-hero { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-stone-50">
+
+  <div class="bg-black text-orange-400 font-bold text-xs py-2 px-4 text-center tracking-wider uppercase border-b border-stone-800">
+    🚚 RM15 FLAT SHIPPING & PACKAGING NATIONWIDE, OR FREE SELF-PICKUP IN MUAR | SECURE PAYMENTS VIA BAYARCASH
+  </div>
+
+  <header class="sticky top-0 z-40 bg-orange-600 border-b border-orange-700 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        <a href="index.html" class="flex items-center gap-3">
+          <img src="assets/logo-icon.png" alt="Ritma Records" class="w-11 h-11 object-contain flex-shrink-0">
+          <span class="text-2xl font-extrabold tracking-tight text-white uppercase serif-title">
+            Ritma<span class="text-stone-900 font-sans text-xs tracking-widest block font-bold">RECORDS</span>
+          </span>
+        </a>
+        <nav class="hidden lg:flex items-center space-x-6 text-xs font-bold uppercase tracking-wider text-orange-100">
+          <a href="index.html" class="header-nav-tab pb-1 transition">Home</a>
+          <a href="index.html?filter=new#catalog" class="header-nav-tab pb-1 transition">New Arrival</a>
+          <a href="index.html?filter=preloved#catalog" class="header-nav-tab pb-1 transition">Preloved/used</a>
+          <a href="artist.html" class="header-nav-tab pb-1 transition">Artist</a>
+          <a href="index.html?filter=merch#catalog" class="header-nav-tab pb-1 transition">Merch</a>
+          <a href="request.html" class="header-nav-tab pb-1 transition">Request Item</a>
+          <a href="contact.html" class="header-nav-tab pb-1 transition">Contact Us</a>
+          <a href="account.html" class="header-nav-tab pb-1 transition">My Account/Order</a>
+        </nav>
+        <div class="flex items-center gap-2">
+          <button onclick="toggleCart()" class="relative p-2.5 bg-orange-700/80 hover:bg-black/80 border border-orange-500/50 rounded-full text-white transition">
+            <i class="fa-solid fa-bag-shopping text-lg"></i>
+            <span id="cart-badge" class="absolute -top-1 -right-1 bg-black text-orange-400 font-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center hidden transition-transform">0</span>
+          </button>
+          <button onclick="toggleMobileNav()" class="lg:hidden p-2.5 text-white">
+            <i class="fa-solid fa-bars text-lg"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="mobile-nav" class="lg:hidden hidden border-t border-orange-700 bg-orange-600">
+      <nav class="flex flex-col px-4 py-4 space-y-1 text-xs font-bold uppercase tracking-wider text-orange-100">
+        <a href="index.html" class="header-nav-tab py-2.5 border-b border-orange-700/50">Home</a>
+        <a href="index.html?filter=new#catalog" class="header-nav-tab py-2.5 border-b border-orange-700/50">New Arrival</a>
+        <a href="index.html?filter=preloved#catalog" class="header-nav-tab py-2.5 border-b border-orange-700/50">Preloved/used</a>
+        <a href="artist.html" class="header-nav-tab py-2.5 border-b border-orange-700/50">Artist</a>
+        <a href="index.html?filter=merch#catalog" class="header-nav-tab py-2.5 border-b border-orange-700/50">Merch</a>
+        <a href="request.html" class="header-nav-tab py-2.5 border-b border-orange-700/50">Request Item</a>
+        <a href="contact.html" class="header-nav-tab py-2.5 border-b border-orange-700/50">Contact Us</a>
+        <a href="account.html" class="header-nav-tab py-2.5">My Account/Order</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="relative bg-stone-100 py-10 border-b border-stone-200">
+    <div class="max-w-3xl mx-auto px-4 text-center">
+      <h1 class="text-3xl md:text-4xl font-normal text-stone-900 sans-hero mb-2 leading-tight tracking-tight">Checkout</h1>
+      <p class="text-stone-600 text-sm">Fill in your details, then continue to payment.</p>
+    </div>
+  </section>
+
+  <main class="max-w-5xl mx-auto px-4 py-12 w-full bg-stone-50 flex-1">
+    <div id="empty-cart-notice" class="hidden text-center py-16">
+      <i class="fa-solid fa-bag-shopping text-stone-300 text-4xl mb-4"></i>
+      <p class="text-stone-500 mb-4">Your crate is empty.</p>
+      <a href="index.html" class="inline-block bg-orange-600 hover:bg-orange-500 text-white font-bold px-6 py-2.5 rounded-lg text-sm transition">Browse the catalog</a>
+    </div>
+
+    <div id="checkout-layout" class="grid grid-cols-1 md:grid-cols-5 gap-10">
+
+      <!-- DETAILS FORM -->
+      <form id="checkout-form" class="md:col-span-3 space-y-6 bg-white border border-stone-200 rounded-xl p-8 shadow-sm">
+
+        <div>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-orange-600 mb-4">Your Details</h2>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-stone-700 mb-1.5">Full Name *</label>
+              <input required id="ck-name" type="text" placeholder="Ahmad Zaki"
+                     class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition">
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-stone-700 mb-1.5">Phone Number *</label>
+                <input required id="ck-phone" type="tel" placeholder="012-345 6789"
+                       class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-stone-700 mb-1.5">Email *</label>
+                <input required id="ck-email" type="email" placeholder="you@example.com"
+                       class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-orange-600 mb-4">Delivery Method</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label class="delivery-option cursor-pointer border-2 border-orange-500 bg-orange-50 rounded-lg p-4 flex flex-col gap-1 transition">
+              <span class="flex items-center gap-2">
+                <input type="radio" name="delivery" value="pickup" checked onchange="onDeliveryChange()" class="accent-orange-600">
+                <span class="font-bold text-sm text-stone-900">Self-Pickup</span>
+              </span>
+              <span class="text-xs text-stone-500 pl-6">Muar, Johor — Free</span>
+            </label>
+            <label class="delivery-option cursor-pointer border-2 border-stone-200 rounded-lg p-4 flex flex-col gap-1 transition">
+              <span class="flex items-center gap-2">
+                <input type="radio" name="delivery" value="shipping" onchange="onDeliveryChange()" class="accent-orange-600">
+                <span class="font-bold text-sm text-stone-900">Shipping</span>
+              </span>
+              <span class="text-xs text-stone-500 pl-6">Nationwide — RM15 flat</span>
+            </label>
+          </div>
+
+          <div id="pickup-note" class="mt-4 text-xs text-stone-500 bg-stone-100 border border-stone-200 rounded-lg p-4 leading-relaxed">
+            <i class="fa-solid fa-location-dot text-orange-500 mr-1"></i>
+            Pickup at <strong>No 11, Jalan Sulaiman, Muar, Johor 84000</strong>. We'll reach out by phone or email to arrange a time once your order's confirmed.
+          </div>
+
+          <div id="shipping-address-fields" class="hidden mt-4 space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-stone-700 mb-1.5">Address Line 1 *</label>
+              <input id="ck-address1" type="text" placeholder="Unit / house / street"
+                     class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-stone-700 mb-1.5">Address Line 2</label>
+              <input id="ck-address2" type="text" placeholder="Optional"
+                     class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition">
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="sm:col-span-1">
+                <label class="block text-xs font-bold text-stone-700 mb-1.5">Postcode *</label>
+                <input id="ck-postcode" type="text" inputmode="numeric" placeholder="84000"
+                       class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition">
+              </div>
+              <div class="sm:col-span-1">
+                <label class="block text-xs font-bold text-stone-700 mb-1.5">City *</label>
+                <input id="ck-city" type="text" placeholder="Muar"
+                       class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition">
+              </div>
+              <div class="sm:col-span-1">
+                <label class="block text-xs font-bold text-stone-700 mb-1.5">State *</label>
+                <select id="ck-state" class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition">
+                  <option value="">Select</option>
+                  <option>Johor</option>
+                  <option>Kedah</option>
+                  <option>Kelantan</option>
+                  <option>Melaka</option>
+                  <option>Negeri Sembilan</option>
+                  <option>Pahang</option>
+                  <option>Perak</option>
+                  <option>Perlis</option>
+                  <option>Pulau Pinang</option>
+                  <option>Sabah</option>
+                  <option>Sarawak</option>
+                  <option>Selangor</option>
+                  <option>Terengganu</option>
+                  <option>W.P. Kuala Lumpur</option>
+                  <option>W.P. Labuan</option>
+                  <option>W.P. Putrajaya</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" id="submit-checkout-btn"
+                class="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-3.5 rounded-lg flex items-center justify-center gap-2 uppercase tracking-wider text-xs transition shadow-md shadow-orange-600/30 disabled:opacity-60">
+          <i class="fa-solid fa-lock"></i> Continue to Payment
+        </button>
+        <p id="checkout-error" class="hidden text-xs text-red-600 text-center"></p>
+      </form>
+
+      <!-- ORDER SUMMARY -->
+      <div class="md:col-span-2">
+        <div class="bg-white border border-stone-200 rounded-xl p-6 shadow-sm sticky top-28">
+          <h2 class="text-sm font-bold text-stone-900 uppercase tracking-wide mb-4">Order Summary</h2>
+          <div id="summary-items" class="space-y-3 mb-4 max-h-64 overflow-y-auto"></div>
+          <div class="border-t border-stone-200 pt-4 space-y-2 text-sm">
+            <div class="flex justify-between text-stone-600">
+              <span>Subtotal</span>
+              <span id="summary-subtotal">RM 0.00</span>
+            </div>
+            <div class="flex justify-between text-stone-600">
+              <span>Shipping & Packaging</span>
+              <span id="summary-shipping">Free</span>
+            </div>
+            <div class="flex justify-between text-base font-extrabold text-stone-900 pt-2 border-t border-stone-200">
+              <span>Total</span>
+              <span id="summary-total" class="text-orange-600">RM 0.00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="cart-drawer" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-end hidden">
+    <div class="w-full max-w-md bg-white border-l border-stone-200 flex flex-col h-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-stone-200 pb-4 mb-4">
+        <h3 class="text-lg font-bold text-stone-900 flex items-center gap-2">
+          <i class="fa-solid fa-bag-shopping text-orange-500"></i> Your Crate (<span id="cart-count-title" class="text-orange-500">0</span>)
+        </h3>
+        <button onclick="toggleCart()" class="text-stone-400 hover:text-stone-700 p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <div id="cart-items" class="flex-1 overflow-y-auto space-y-4"></div>
+      <div class="border-t border-stone-200 pt-4 mt-auto">
+        <div class="flex justify-between text-sm mb-2 text-stone-600">
+          <span>Subtotal</span>
+          <span id="cart-subtotal" class="text-orange-600 font-extrabold text-lg">RM 0.00</span>
+        </div>
+        <p class="text-[11px] text-stone-400 mb-4">RM15 shipping nationwide, or free self-pickup in Muar — choose at checkout.</p>
+        <button id="checkout-btn" onclick="toggleCart()" class="w-full bg-stone-900 hover:bg-black text-white font-black py-3.5 rounded-lg flex items-center justify-center gap-2 uppercase tracking-wider text-xs transition">
+          <i class="fa-solid fa-xmark"></i> Back to Checkout
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-stone-900 border-t border-stone-800 py-8 text-center text-xs text-stone-400">
+    <div class="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-4">
+      <a href="artist.html" class="hover:text-orange-400 transition">Artist</a>
+      <a href="request.html" class="hover:text-orange-400 transition">Request Item</a>
+      <a href="contact.html" class="hover:text-orange-400 transition">Contact Us</a>
+      <a href="account.html" class="hover:text-orange-400 transition">My Account/Order</a>
+    </div>
+    <p>© 2026 Ritma Records. All rights reserved. Muar, Johor, Malaysia.</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script>
+    const SHIPPING_FEE = 15;
+
+    function currentDeliveryMethod() {
+      const checked = document.querySelector('input[name="delivery"]:checked');
+      return checked ? checked.value : 'pickup';
+    }
+
+    function onDeliveryChange() {
+      const isShipping = currentDeliveryMethod() === 'shipping';
+      document.getElementById('shipping-address-fields').classList.toggle('hidden', !isShipping);
+      document.getElementById('pickup-note').classList.toggle('hidden', isShipping);
+
+      document.querySelectorAll('.delivery-option').forEach(label => {
+        const isThisOne = label.querySelector('input').checked;
+        label.classList.toggle('border-orange-500', isThisOne);
+        label.classList.toggle('bg-orange-50', isThisOne);
+        label.classList.toggle('border-stone-200', !isThisOne);
+      });
+
+      renderCheckoutSummary();
+    }
+
+    function renderCheckoutSummary() {
+      const items = cartLineItems();
+      const layout = document.getElementById('checkout-layout');
+      const emptyNotice = document.getElementById('empty-cart-notice');
+
+      if (items.length === 0) {
+        layout.classList.add('hidden');
+        emptyNotice.classList.remove('hidden');
+        return;
+      }
+      layout.classList.remove('hidden');
+      emptyNotice.classList.add('hidden');
+
+      document.getElementById('summary-items').innerHTML = items.map(item => `
+        <div class="flex justify-between text-sm">
+          <span class="text-stone-700">${escapeHtml(item.title)} <span class="text-stone-400">× ${item.qty}</span></span>
+          <span class="text-stone-900 font-semibold">${formatMYR(item.price * item.qty)}</span>
+        </div>
+      `).join('');
+
+      const subtotal = cartSubtotal();
+      const shippingFee = currentDeliveryMethod() === 'shipping' ? SHIPPING_FEE : 0;
+
+      document.getElementById('summary-subtotal').textContent = formatMYR(subtotal);
+      document.getElementById('summary-shipping').textContent = shippingFee === 0 ? 'Free' : formatMYR(shippingFee);
+      document.getElementById('summary-total').textContent = formatMYR(subtotal + shippingFee);
+    }
+
+    document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const items = cartLineItems();
+      const errorEl = document.getElementById('checkout-error');
+      errorEl.classList.add('hidden');
+
+      if (items.length === 0) {
+        errorEl.textContent = 'Your crate is empty.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      const deliveryMethod = currentDeliveryMethod();
+      const name = document.getElementById('ck-name').value.trim();
+      const phone = document.getElementById('ck-phone').value.trim();
+      const email = document.getElementById('ck-email').value.trim();
+
+      let shippingAddress = null;
+      if (deliveryMethod === 'shipping') {
+        const address1 = document.getElementById('ck-address1').value.trim();
+        const city = document.getElementById('ck-city').value.trim();
+        const postcode = document.getElementById('ck-postcode').value.trim();
+        const state = document.getElementById('ck-state').value;
+        if (!address1 || !city || !postcode || !state) {
+          errorEl.textContent = 'Please fill in your full shipping address.';
+          errorEl.classList.remove('hidden');
+          return;
+        }
+        shippingAddress = {
+          line1: address1,
+          line2: document.getElementById('ck-address2').value.trim(),
+          city, postcode, state
+        };
+      }
+
+      const submitBtn = document.getElementById('submit-checkout-btn');
+      const originalLabel = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing…`;
+
+      try {
+        const res = await fetch('/.netlify/functions/create-bayarcash-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items: items.map(i => ({ id: i.id, title: i.title, price: i.price, qty: i.qty })),
+            payer: { name, phone, email },
+            deliveryMethod,
+            shippingAddress
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.status === 409) {
+          const lines = (data.problems || [])
+            .map(p => `• ${p.title}: only ${p.available} left (you asked for ${p.requested})`)
+            .join('\n');
+          errorEl.textContent = `Some items changed availability:\n${lines}\nPlease go back to your crate and adjust.`;
+          errorEl.classList.remove('hidden');
+          return;
+        }
+
+        if (data.status === 'not_configured') {
+          const shippingFee = deliveryMethod === 'shipping' ? SHIPPING_FEE : 0;
+          alert(
+            'Bayarcash isn\'t connected yet.\n\n' +
+            `Order total: ${formatMYR(cartSubtotal() + shippingFee)} (incl. ${shippingFee === 0 ? 'free pickup' : 'RM15 shipping'})\n\n` +
+            'Once a Bayarcash merchant account is set up, this will redirect to a real payment page automatically.'
+          );
+          return;
+        }
+
+        if (data.paymentUrl) {
+          window.location.href = data.paymentUrl;
+          return;
+        }
+
+        throw new Error(data.error || 'Unexpected response from checkout.');
+      } catch (err) {
+        console.error('[Ritma] Checkout error:', err);
+        errorEl.textContent = 'Something went wrong. Please try again in a moment.';
+        errorEl.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalLabel;
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadProducts();
+      renderCheckoutSummary();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact Us | Ritma Records</title>
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@0,700;1,600&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fafaf9; color: #1c1917; }
+    .serif-title { font-family: 'Playfair Display', serif; }
+    .sans-hero { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-stone-50">
+
+  <div class="bg-black text-orange-400 font-bold text-xs py-2 px-4 text-center tracking-wider uppercase border-b border-stone-800">
+    🚚 RM15 FLAT SHIPPING & PACKAGING NATIONWIDE, OR FREE SELF-PICKUP IN MUAR | SECURE PAYMENTS VIA BAYARCASH
+  </div>
+
+  <header class="sticky top-0 z-40 bg-orange-600 border-b border-orange-700 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        <a href="index.html" class="flex items-center gap-3">
+          <img src="assets/logo-icon.png" alt="Ritma Records" class="w-11 h-11 object-contain flex-shrink-0">
+          <span class="text-2xl font-extrabold tracking-tight text-white uppercase serif-title">
+            Ritma<span class="text-stone-900 font-sans text-xs tracking-widest block font-bold">RECORDS</span>
+          </span>
+        </a>
+        <nav class="hidden lg:flex items-center space-x-6 text-xs font-bold uppercase tracking-wider text-orange-100">
+          <a href="index.html" class="header-nav-tab pb-1 transition">Home</a>
+          <a href="index.html?filter=new#catalog" class="header-nav-tab pb-1 transition">New Arrival</a>
+          <a href="index.html?filter=preloved#catalog" class="header-nav-tab pb-1 transition">Preloved/used</a>
+          <a href="artist.html" class="header-nav-tab pb-1 transition">Artist</a>
+          <a href="index.html?filter=merch#catalog" class="header-nav-tab pb-1 transition">Merch</a>
+          <a href="request.html" class="header-nav-tab pb-1 transition">Request Item</a>
+          <a href="contact.html" class="header-nav-tab pb-1 transition">Contact Us</a>
+          <a href="account.html" class="header-nav-tab pb-1 transition">My Account/Order</a>
+        </nav>
+        <div class="flex items-center gap-2">
+          <button onclick="toggleCart()" class="relative p-2.5 bg-orange-700/80 hover:bg-black/80 border border-orange-500/50 rounded-full text-white transition">
+            <i class="fa-solid fa-bag-shopping text-lg"></i>
+            <span id="cart-badge" class="absolute -top-1 -right-1 bg-black text-orange-400 font-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center hidden transition-transform">0</span>
+          </button>
+          <button onclick="toggleMobileNav()" class="lg:hidden p-2.5 text-white">
+            <i class="fa-solid fa-bars text-lg"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="mobile-nav" class="lg:hidden hidden border-t border-orange-700 bg-orange-600">
+      <nav class="flex flex-col px-4 py-4 space-y-1 text-xs font-bold uppercase tracking-wider text-orange-100">
+        <a href="index.html" class="header-nav-tab py-2.5 border-b border-orange-700/50">Home</a>
+        <a href="index.html?filter=new#catalog" class="header-nav-tab py-2.5 border-b border-orange-700/50">New Arrival</a>
+        <a href="index.html?filter=preloved#catalog" class="header-nav-tab py-2.5 border-b border-orange-700/50">Preloved/used</a>
+        <a href="artist.html" class="header-nav-tab py-2.5 border-b border-orange-700/50">Artist</a>
+        <a href="index.html?filter=merch#catalog" class="header-nav-tab py-2.5 border-b border-orange-700/50">Merch</a>
+        <a href="request.html" class="header-nav-tab py-2.5 border-b border-orange-700/50">Request Item</a>
+        <a href="contact.html" class="header-nav-tab py-2.5 border-b border-orange-700/50">Contact Us</a>
+        <a href="account.html" class="header-nav-tab py-2.5">My Account/Order</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="relative bg-stone-100 py-16 border-b border-stone-200">
+    <div class="max-w-3xl mx-auto px-4 text-center">
+      <span class="inline-block px-3.5 py-1 bg-orange-600/10 text-orange-600 border border-orange-600/30 rounded-full text-xs font-extrabold tracking-wider uppercase mb-4">
+        Get in Touch
+      </span>
+      <h1 class="text-3xl md:text-5xl font-normal text-stone-900 sans-hero mb-4 leading-tight tracking-tight">
+        Contact Us
+      </h1>
+      <p class="text-stone-600 text-sm md:text-base font-normal">
+        Questions about an order, a pressing, or just want to talk records? Reach out.
+      </p>
+    </div>
+  </section>
+
+  <main class="max-w-5xl mx-auto px-4 py-16 w-full bg-stone-50 flex-1 grid grid-cols-1 md:grid-cols-5 gap-10">
+    <!-- CONTACT FORM -->
+    <form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="md:col-span-3 space-y-5 bg-white border border-stone-200 rounded-xl p-8 shadow-sm">
+      <input type="hidden" name="form-name" value="contact" />
+      <p class="hidden">
+        <label>Don't fill this out if you're human: <input name="bot-field" /></label>
+      </p>
+
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-orange-600 mb-2">Your Name</label>
+        <input required type="text" name="name" class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition" placeholder="Ahmad Zaki" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-orange-600 mb-2">Email</label>
+        <input required type="email" name="email" class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition" placeholder="you@example.com" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-orange-600 mb-2">Order Number (if applicable)</label>
+        <input type="text" name="order_number" class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition" placeholder="RR-00123" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-wider text-orange-600 mb-2">Message</label>
+        <textarea required name="message" rows="5" class="w-full bg-stone-100 border border-stone-300 focus:border-orange-500 rounded-lg px-4 py-3 text-sm text-stone-900 outline-none transition resize-none" placeholder="How can we help?"></textarea>
+      </div>
+
+      <button type="submit" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-3.5 rounded-lg uppercase tracking-wider text-xs transition shadow-md shadow-orange-600/30">
+        Send Message
+      </button>
+    </form>
+
+    <!-- STORE INFO -->
+    <div class="md:col-span-2 space-y-6">
+      <div class="bg-white border border-stone-200 rounded-xl p-6 shadow-sm">
+        <h3 class="text-sm font-bold text-stone-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-location-dot text-orange-500"></i> Location
+        </h3>
+        <p class="text-stone-600 text-sm">Muar, Johor, Malaysia</p>
+      </div>
+
+      <div class="bg-white border border-stone-200 rounded-xl p-6 shadow-sm">
+        <h3 class="text-sm font-bold text-stone-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-clock text-orange-500"></i> Response Time
+        </h3>
+        <p class="text-stone-600 text-sm">We reply to emails and messages within 1–2 business days.</p>
+      </div>
+
+      <div class="bg-white border border-stone-200 rounded-xl p-6 shadow-sm">
+        <h3 class="text-sm font-bold text-stone-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-share-nodes text-orange-500"></i> Follow Along
+        </h3>
+        <div class="flex gap-3">
+          <a href="#" class="w-9 h-9 flex items-center justify-center bg-stone-100 hover:bg-orange-600 border border-stone-300 hover:border-orange-500 rounded-full text-stone-600 hover:text-white transition"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="w-9 h-9 flex items-center justify-center bg-stone-100 hover:bg-orange-600 border border-stone-300 hover:border-orange-500 rounded-full text-stone-600 hover:text-white transition"><i class="fa-brands fa-tiktok"></i></a>
+          <a href="#" class="w-9 h-9 flex items-center justify-center bg-stone-100 hover:bg-orange-600 border border-stone-300 hover:border-orange-500 rounded-full text-stone-600 hover:text-white transition"><i class="fa-brands fa-whatsapp"></i></a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="cart-drawer" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-end hidden">
+    <div class="w-full max-w-md bg-white border-l border-stone-200 flex flex-col h-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-stone-200 pb-4 mb-4">
+        <h3 class="text-lg font-bold text-stone-900 flex items-center gap-2">
+          <i class="fa-solid fa-bag-shopping text-orange-500"></i> Your Crate (<span id="cart-count-title" class="text-orange-500">0</span>)
+        </h3>
+        <button onclick="toggleCart()" class="text-stone-400 hover:text-stone-700 p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <div id="cart-items" class="flex-1 overflow-y-auto space-y-4"></div>
+      <div class="border-t border-stone-200 pt-4 mt-auto">
+        <div class="flex justify-between text-sm mb-2 text-stone-600">
+          <span>Subtotal</span>
+          <span id="cart-subtotal" class="text-orange-600 font-extrabold text-lg">RM 0.00</span>
+        </div>
+        <p class="text-[11px] text-stone-400 mb-4">RM15 shipping nationwide, or free self-pickup in Muar — choose at checkout.</p>
+        <button id="checkout-btn" onclick="goToCheckout()" class="w-full bg-orange-600 hover:bg-orange-500 text-white font-black py-3.5 rounded-lg flex items-center justify-center gap-2 uppercase tracking-wider text-xs transition shadow-md shadow-orange-600/30 disabled:opacity-60">
+          <i class="fa-solid fa-arrow-right"></i> Proceed to Checkout
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-stone-900 border-t border-stone-800 py-8 text-center text-xs text-stone-400">
+    <div class="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-4">
+      <a href="artist.html" class="hover:text-orange-400 transition">Artist</a>
+      <a href="request.html" class="hover:text-orange-400 transition">Request Item</a>
+      <a href="contact.html" class="hover:text-orange-400 transition">Contact Us</a>
+      <a href="account.html" class="hover:text-orange-400 transition">My Account/Order</a>
+    </div>
+    <p>© 2026 Ritma Records. All rights reserved. Muar, Johor, Malaysia.</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
