@@ -81,9 +81,6 @@ exports.handler = async (event) => {
     return { statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'ok', order: updated }) };
   } catch (err) {
     console.error('[Ritma] admin-update-order-fulfilment error:', err);
-    // TEMPORARY: surfacing the real error message directly in the response
-    // to debug faster — revert this to a generic message once confirmed
-    // working, so internal error details aren't exposed long-term.
-    return { statusCode: 500, body: JSON.stringify({ error: 'Could not update order: ' + (err && err.message ? err.message : String(err)) }) };
+    return { statusCode: 500, body: JSON.stringify({ error: 'Could not update order.' }) };
   }
 };

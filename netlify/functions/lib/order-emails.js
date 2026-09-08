@@ -72,6 +72,11 @@ async function sendOrderConfirmationEmail(order) {
         ${totalsHtmlRows(order)}
       </table>
       ${deliveryHtml(order)}
+      <p style="color:#57534e; font-size:13px; margin-top:16px;">
+        ${order.deliveryMethod === 'shipping'
+          ? "We'll email you again with a tracking link once your order ships."
+          : "We'll email you once your order is ready for pickup."}
+      </p>
       <p style="color:#a8a29e; font-size:12px; margin-top:28px;">Ritma Records — Muar, Johor, Malaysia</p>
     </div>
   `;
