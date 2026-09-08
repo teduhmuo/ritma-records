@@ -23,8 +23,19 @@
     <div class="w-16 h-16 rounded-full bg-orange-600/10 border border-orange-600/30 flex items-center justify-center mx-auto mb-6">
       <i class="fa-solid fa-check text-orange-500 text-2xl"></i>
     </div>
-    <h1 class="text-2xl font-normal text-stone-900 sans-hero tracking-tight mb-3">Thanks for your order!</h1>
+    <h1 id="order-title" class="text-2xl font-normal text-stone-900 sans-hero tracking-tight mb-3">Thanks for your order!</h1>
     <p id="order-ref" class="text-stone-600 text-sm mb-6">We're confirming your payment now — a receipt will be emailed to you shortly.</p>
+
+    <!-- Shown only for pending bank-transfer orders, as a fallback in case
+         the invoice email is missed or lands in spam. -->
+    <div id="bank-transfer-details" class="hidden text-left bg-stone-50 border border-stone-200 rounded-lg p-4 mb-6 text-sm">
+      <p class="font-bold text-stone-900 mb-2">Bank Transfer Details</p>
+      <p class="text-stone-600">Bank: <strong>Maybank</strong></p>
+      <p class="text-stone-600">Account Name: <strong>Kedai Rekod Ritma</strong></p>
+      <p class="text-stone-600">Account Number: <strong>5514 1815 3718</strong></p>
+      <p class="text-stone-500 text-xs mt-2">Please use <strong id="bank-transfer-ref"></strong> as your payment reference so we can match it to your order.</p>
+    </div>
+
     <a href="index.html" class="inline-block bg-orange-600 hover:bg-orange-500 text-white font-black px-6 py-3 rounded-lg uppercase tracking-wider text-xs transition shadow-md shadow-orange-600/30">
       Back to Catalog
     </a>
@@ -33,9 +44,18 @@
   <script>
     const params = new URLSearchParams(location.search);
     const order = params.get('order');
-    if (order) {
+    const pending = params.get('pending');
+
+    if (pending === 'bank_transfer' && order) {
+      document.getElementById('order-title').innerText = 'Order received — payment pending';
+      document.getElementById('order-ref').innerText =
+        `Order ${order} — we've emailed you an invoice with bank transfer details. Your order will be confirmed once we've matched your payment.`;
+      document.getElementById('bank-transfer-ref').innerText = order;
+      document.getElementById('bank-transfer-details').classList.remove('hidden');
+    } else if (order) {
       document.getElementById('order-ref').innerText = `Order ${order} — we're confirming your payment now, a receipt will be emailed to you shortly.`;
     }
+
     // Clear the local cart now that checkout has completed.
     try { localStorage.removeItem('ritma_cart_v1'); } catch (e) {}
   </script>

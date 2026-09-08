@@ -76,6 +76,7 @@ function rowToOrder(row) {
     shippingAddress: row.shipping_address,
     payer: row.payer,
     status: row.status,
+    paymentMethod: row.payment_method || 'bayarcash',
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };
@@ -93,6 +94,7 @@ async function saveOrder(orderNumber, order) {
     shipping_address: order.shippingAddress,
     payer: order.payer,
     status: order.status,
+    payment_method: order.paymentMethod || 'bayarcash',
     created_at: order.createdAt
   });
   if (error) throw error;
@@ -161,6 +163,7 @@ async function getDashboardData() {
   const recentOrders = orders.slice(0, 25).map(o => ({
     orderNumber: o.orderNumber,
     status: o.status,
+    paymentMethod: o.paymentMethod,
     amount: o.amount,
     subtotal: o.subtotal,
     shippingFee: o.shippingFee,

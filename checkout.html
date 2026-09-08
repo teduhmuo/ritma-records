@@ -360,12 +360,12 @@
         }
 
         if (data.status === 'not_configured') {
-          const shippingFee = deliveryMethod === 'shipping' ? SHIPPING_FEE : 0;
-          alert(
-            'Bayarcash isn\'t connected yet.\n\n' +
-            `Order total: ${formatMYR(cartSubtotal() + shippingFee)} (incl. ${shippingFee === 0 ? 'free pickup' : 'RM15 shipping'})\n\n` +
-            'Once a Bayarcash merchant account is set up, this will redirect to a real payment page automatically.'
-          );
+          // Bayarcash isn't live yet — the order was saved as a manual
+          // bank-transfer order and an invoice email was already sent.
+          // Send the customer to the confirmation page with a pending flag
+          // instead of blocking here with an alert. order-confirmation.html
+          // clears the local cart itself once it loads.
+          window.location.href = `/order-confirmation.html?order=${encodeURIComponent(data.orderNumber)}&pending=bank_transfer`;
           return;
         }
 

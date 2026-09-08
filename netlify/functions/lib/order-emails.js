@@ -114,4 +114,47 @@ async function sendAdminNotificationEmail(order) {
   });
 }
 
-module.exports = { sendOrderConfirmationEmail, sendAdminNotificationEmail };
+/* ==========================================================================
+   Manual bank transfer invoice — sent immediately at checkout (NOT once
+   paid, unlike the two emails above) since this IS the payment
+   instruction. Interim measure while Bayarcash isn't set up yet. Order
+   stays 'pending' in Supabase until the admin manually confirms the
+   transfer landed and marks it paid from the dashboard, which then fires
+   sendOrderConfirmationEmail/sendAdminNotificationEmail as normal.
+   ========================================================================== */
+async function sendInvoiceEmail(order) {
+  const bankName = process.env.BANK_NAME || '';
+  const bankAccountName = process.env.BANK_ACCOUNT_NAME || '';
+  const bankAccountNumber = process.env.BANK_ACCOUNT_NUMBER || '';
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; color:#1c1917; max-width:480px; margin:0 auto;">
+      <h2 style="color:#ea580c; margin-bottom:4px;">Invoice for your order, ${escapeHtml(order.payer.name)}</h2>
+      <p style="color:#57534e;">Order / Invoice No. <strong>${order.orderNumber}</strong></p>
+      <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; padding:14px; margin:16px 0; font-size:13px; color:#7c2d12;">
+        This order is <strong>not paid yet</strong>. Please complete a bank transfer for the total below, using
+        <strong>${order.orderNumber}</strong> as the payment reference, so it can be matched to your order.
+      </div>
+      <table style="width:100%; border-collapse:collapse; margin:16px 0; font-size:14px;">
+        ${itemsHtmlRows(order.items)}
+        ${totalsHtmlRows(order)}
+      </table>
+      <div style="background:#f5f5f4; border-radius:8px; padding:14px; margin:16px 0; font-size:14px;">
+        <p style="margin:0 0 8px; font-weight:bold;">Bank Transfer Details</p>
+        <p style="margin:0;">Bank: ${escapeHtml(bankName)}</p>
+        <p style="margin:0;">Account Name: ${escapeHtml(bankAccountName)}</p>
+        <p style="margin:0;">Account Number: ${escapeHtml(bankAccountNumber)}</p>
+        <p style="margin:8px 0 0; font-size:12px; color:#78716c;">Reference: ${order.orderNumber}</p>
+      </div>
+      ${deliveryHtml(order)}
+      <p style="color:#57534e; font-size:13px; margin-top:16px;">
+        Once we've confirmed your transfer, you'll receive a separate order confirmation email and your order will be prepared for
+        ${order.deliveryMethod === 'shipping' ? 'shipping' : 'pickup'}.
+      </p>
+      <p style="color:#a8a29e; font-size:12px; margin-top:28px;">Ritma Records — Muar, Johor, Malaysia</p>
+    </div>
+  `;
+  return sendEmail({ to: order.payer.email, subject: `Invoice ${order.orderNumber} — Ritma Records`, html });
+}
+
+module.exports = { sendOrderConfirmationEmail, sendAdminNotificationEmail, sendInvoiceEmail };

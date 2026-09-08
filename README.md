@@ -154,11 +154,55 @@ customer hasn't paid yet at that point and may abandon:
 Fulfillment details (customer contact + delivery address) show up on
 `/dashboard`'s Recent Orders — click **View** on any order.
 
+## Manual bank transfer (interim payment method, before Bayarcash)
+
+Bayarcash isn't connected yet, so right now every order falls back to a
+manual bank-transfer flow instead of a real payment page:
+
+1. Customer checks out → order is saved with `status: 'pending'` and
+   `payment_method: 'bank_transfer'`.
+2. An **invoice email** is sent immediately from `hello@ritmarecords.com`
+   (`lib/order-emails.js` → `sendInvoiceEmail`) with the itemized order,
+   total, and your bank details, telling the customer to transfer using
+   the order number as the reference.
+3. The confirmation page (`order-confirmation.html`) also shows the same
+   bank details as a fallback in case the email is missed.
+4. You check Maybank, match the incoming transfer to the order number,
+   then open `/dashboard` → Overview → find the order → **Mark as Paid**.
+   This calls `admin-mark-order-paid.js`, which decrements stock, flips
+   the order to `paid`, and sends the normal customer confirmation email —
+   the same thing a real Bayarcash payment would trigger automatically.
+
+**Required setup:**
+
+1. In Netlify: **Project configuration → Environment variables**, add:
+   - `BANK_NAME` — e.g. `Maybank`
+   - `BANK_ACCOUNT_NAME` — e.g. `Kedai Rekod Ritma`
+   - `BANK_ACCOUNT_NUMBER` — e.g. `5514 1815 3718`
+2. In Supabase (SQL Editor), run:
+   ```sql
+   ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method text NOT NULL DEFAULT 'bayarcash';
+   ```
+   This lets existing rows (all pre-Bayarcash, pre-this-feature orders)
+   default sensibly without breaking anything already in the table.
+3. **Same Resend domain-verification caveat as above applies here** — the
+   invoice email is a customer-facing email, so until ritmarecords.com is
+   a verified sending domain in Resend, it will silently fail to reach
+   real customers (logged, not thrown). Until that's done, treat the
+   bank details shown on the confirmation page as the reliable fallback,
+   not the email.
+
+Once a real Bayarcash merchant account is connected (see below), new
+orders automatically switch back to `payment_method: 'bayarcash'` and
+skip this flow entirely — no code changes needed, it's driven by whether
+`BAYARCASH_API_SECRET_KEY`/`BAYARCASH_PORTAL_KEY` are set.
+
 ## Turning on real Bayarcash payments
 
-Right now checkout shows the order total instead of charging a card,
-because there's no Bayarcash merchant account connected yet — nothing is
-broken, this is the intended placeholder behavior.
+Right now checkout falls back to the manual bank-transfer flow above
+instead of charging a card, because there's no Bayarcash merchant account
+connected yet — nothing is broken, this is the intended placeholder
+behavior.
 
 When ready to go live:
 

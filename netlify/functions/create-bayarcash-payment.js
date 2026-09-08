@@ -7,11 +7,18 @@
    API secret key. That secret can never be exposed in browser code — it has
    to be added here, on the server, as an environment variable.
 
-   CURRENT STATUS: NOT CONFIGURED
-   Ritma Records doesn't have a Bayarcash merchant account yet, so this
-   function currently returns { status: "not_configured" } and the frontend
-   shows an order total instead of redirecting to a real payment page.
-   Nothing breaks — this is intentional and safe to deploy as-is.
+   CURRENT STATUS: NOT CONFIGURED — MANUAL BANK TRANSFER INTERIM FLOW
+   Ritma Records doesn't have a Bayarcash merchant account yet. Until it
+   does, every order falls back to manual bank transfer: the order is
+   saved with paymentMethod 'bank_transfer' and status 'pending', an
+   invoice email (bank details + order number as reference) is sent via
+   sendInvoiceEmail (lib/order-emails.js), and the response tells the
+   frontend to show a "check your email" confirmation instead of
+   redirecting to a payment page. The admin then manually matches the
+   incoming transfer and clicks "Mark as Paid" on the dashboard, which
+   calls admin-mark-order-paid.js — that mirrors what the Bayarcash
+   webhook does (decrement stock, send the normal receipt/notification
+   emails), just triggered by a person instead of a payment gateway.
 
    TO GO LIVE LATER:
    1. Sign up for a Bayarcash merchant account: https://bayar.cash
@@ -54,6 +61,7 @@
 const crypto = require('crypto');
 const { checkStockAvailable, saveOrder } = require('./lib/inventory');
 const { getProduct } = require('./lib/catalog');
+const { sendInvoiceEmail } = require('./lib/order-emails');
 
 const SHIPPING_FEE = 15; // RM, flat rate nationwide — see checkout.html
 
@@ -129,10 +137,9 @@ exports.handler = async (event) => {
     const amount = Number((subtotal + shippingFee).toFixed(2));
 
     const orderNumber = `RR-${Date.now()}`;
+    const bayarcashReady = Boolean(BAYARCASH_API_SECRET_KEY && BAYARCASH_PORTAL_KEY);
 
-    // ---- Persist the order — needed by the webhook for stock decrement,
-    //      fulfilment details on the dashboard, and the confirmation emails.
-    await saveOrder(orderNumber, {
+    const orderRecord = {
       orderNumber,
       items: verifiedItems,
       subtotal: Number(subtotal.toFixed(2)),
@@ -142,11 +149,27 @@ exports.handler = async (event) => {
       shippingAddress: deliveryMethod === 'shipping' ? shippingAddress : null,
       payer,
       status: 'pending',
+      // Until a Bayarcash merchant account is live, every order falls back
+      // to manual bank transfer — see lib/order-emails.js sendInvoiceEmail
+      // and admin-mark-order-paid.js for the rest of that flow.
+      paymentMethod: bayarcashReady ? 'bayarcash' : 'bank_transfer',
       createdAt: new Date().toISOString()
-    });
+    };
 
-    // ---- Not configured yet: respond gracefully instead of erroring ----
-    if (!BAYARCASH_API_SECRET_KEY || !BAYARCASH_PORTAL_KEY) {
+    // ---- Persist the order — needed by the webhook (or the manual
+    //      admin-mark-order-paid path) for stock decrement, fulfilment
+    //      details on the dashboard, and the confirmation emails.
+    await saveOrder(orderNumber, orderRecord);
+
+    // ---- Not configured yet: send the bank-transfer invoice instead of
+    //      erroring, and let the customer know it's pending manual review.
+    if (!bayarcashReady) {
+      try {
+        const invoiceResult = await sendInvoiceEmail(orderRecord);
+        console.log(`[Ritma] Order ${orderNumber} invoice email:`, invoiceResult);
+      } catch (emailErr) {
+        console.error(`[Ritma] Order ${orderNumber} invoice email failed:`, emailErr);
+      }
       return {
         statusCode: 200,
         headers: { 'Content-Type': 'application/json' },

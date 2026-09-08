@@ -428,6 +428,13 @@
       return `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${cls}">${escapeHtml(status)}</span>`;
     }
 
+    function paymentMethodLabel(method) {
+      if (method === 'bank_transfer') {
+        return `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded border bg-blue-50 text-blue-700 border-blue-200">Bank Transfer</span>`;
+      }
+      return `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded border bg-stone-100 text-stone-500 border-stone-200">Bayarcash</span>`;
+    }
+
     function stockCell(stock) {
       if (stock === 0) return `<span class="text-red-600 font-bold">0 · sold out</span>`;
       if (stock <= 3) return `<span class="text-orange-600 font-bold">${stock} · low</span>`;
@@ -462,10 +469,13 @@
         <tr class="hover:bg-stone-50">
           <td class="px-5 py-3 font-semibold text-stone-900">${o.orderNumber}</td>
           <td class="px-5 py-3 text-stone-600">${new Date(o.createdAt).toLocaleString('en-MY')}</td>
-          <td class="px-5 py-3">${statusBadge(o.status)}</td>
+          <td class="px-5 py-3">${statusBadge(o.status)} ${paymentMethodLabel(o.paymentMethod)}</td>
           <td class="px-5 py-3 text-right text-stone-600">${o.itemCount}</td>
           <td class="px-5 py-3 text-right font-bold text-stone-900">${formatMYR(o.amount)}</td>
           <td class="px-5 py-3 text-right">
+            ${o.status === 'pending' && o.paymentMethod === 'bank_transfer'
+              ? `<button onclick="markOrderPaid('${o.orderNumber}', event)" class="text-xs text-green-700 hover:underline mr-3">Mark Paid</button>`
+              : ''}
             <button onclick="openOrderModal('${o.orderNumber}')" class="text-xs text-orange-600 hover:underline">View</button>
           </td>
         </tr>
@@ -495,7 +505,12 @@
 
       document.getElementById('order-modal-title').textContent = `Order ${o.orderNumber}`;
       document.getElementById('order-modal-body').innerHTML = `
-        <div class="mb-4">${statusBadge(o.status)} <span class="text-stone-400 ml-2">${new Date(o.createdAt).toLocaleString('en-MY')}</span></div>
+        <div class="mb-4 flex items-center justify-between">
+          <div>${statusBadge(o.status)} ${paymentMethodLabel(o.paymentMethod)} <span class="text-stone-400 ml-2">${new Date(o.createdAt).toLocaleString('en-MY')}</span></div>
+          ${o.status === 'pending' && o.paymentMethod === 'bank_transfer'
+            ? `<button onclick="markOrderPaid('${o.orderNumber}', event)" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-500 transition">Mark as Paid</button>`
+            : ''}
+        </div>
 
         <div class="mb-4">
           <p class="font-bold text-stone-900 mb-1">Customer</p>
@@ -527,6 +542,32 @@
         </div>
       `;
       document.getElementById('order-modal').classList.remove('hidden');
+    }
+
+    async function markOrderPaid(orderNumber, evt) {
+      if (evt) evt.stopPropagation();
+      if (!confirm(`Confirm you've received the bank transfer for ${orderNumber} and want to mark it paid?`)) return;
+
+      try {
+        const res = await fetch('/.netlify/functions/admin-mark-order-paid', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body: JSON.stringify({ orderNumber })
+        });
+        if (res.status === 401) return signOutAndShowGate();
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          alert(data.error || 'Could not mark this order as paid.');
+          return;
+        }
+        // Reload the order list/stats so stock, revenue, and the badge all
+        // reflect the change immediately.
+        await loadOverview();
+        closeOrderModal();
+      } catch (err) {
+        console.error('[Ritma] markOrderPaid failed:', err);
+        alert('Something went wrong — please try again.');
+      }
     }
 
     function closeOrderModal() {
