@@ -192,4 +192,48 @@ async function sendAdminPendingBankTransferEmail(order) {
   });
 }
 
-module.exports = { sendOrderConfirmationEmail, sendAdminNotificationEmail, sendInvoiceEmail, sendAdminPendingBankTransferEmail };
+async function sendShippedEmail(order) {
+  const html = `
+    <div style="font-family: Arial, sans-serif; color:#1c1917; max-width:480px; margin:0 auto;">
+      <h2 style="color:#ea580c; margin-bottom:4px;">Your order is on the way, ${escapeHtml(order.payer.name)}!</h2>
+      <p style="color:#57534e;">Order <strong>${order.orderNumber}</strong> has shipped.</p>
+      <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:14px; margin:16px 0; text-align:center;">
+        <a href="${order.trackingLink}" style="display:inline-block; background:#ea580c; color:#fff; text-decoration:none; font-weight:bold; font-size:13px; padding:10px 20px; border-radius:8px;">
+          Track Your Package
+        </a>
+      </div>
+      <table style="width:100%; border-collapse:collapse; margin:16px 0; font-size:14px;">
+        ${itemsHtmlRows(order.items)}
+        ${totalsHtmlRows(order)}
+      </table>
+      ${deliveryHtml(order)}
+      <p style="color:#a8a29e; font-size:12px; margin-top:28px;">Ritma Records — Muar, Johor, Malaysia</p>
+    </div>
+  `;
+  return sendEmail({ to: order.payer.email, subject: `Your order ${order.orderNumber} has shipped`, html });
+}
+
+async function sendReadyForPickupEmail(order) {
+  const html = `
+    <div style="font-family: Arial, sans-serif; color:#1c1917; max-width:480px; margin:0 auto;">
+      <h2 style="color:#ea580c; margin-bottom:4px;">Ready for pickup, ${escapeHtml(order.payer.name)}!</h2>
+      <p style="color:#57534e;">Order <strong>${order.orderNumber}</strong> is ready whenever you are.</p>
+      <table style="width:100%; border-collapse:collapse; margin:16px 0; font-size:14px;">
+        ${itemsHtmlRows(order.items)}
+        ${totalsHtmlRows(order)}
+      </table>
+      ${deliveryHtml(order)}
+      <p style="color:#a8a29e; font-size:12px; margin-top:28px;">Ritma Records — Muar, Johor, Malaysia</p>
+    </div>
+  `;
+  return sendEmail({ to: order.payer.email, subject: `Order ${order.orderNumber} is ready for pickup`, html });
+}
+
+module.exports = {
+  sendOrderConfirmationEmail,
+  sendAdminNotificationEmail,
+  sendInvoiceEmail,
+  sendAdminPendingBankTransferEmail,
+  sendShippedEmail,
+  sendReadyForPickupEmail
+};

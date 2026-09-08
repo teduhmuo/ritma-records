@@ -77,6 +77,7 @@ function rowToOrder(row) {
     payer: row.payer,
     status: row.status,
     paymentMethod: row.payment_method || 'bayarcash',
+    trackingLink: row.tracking_link || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };
@@ -107,11 +108,19 @@ async function getOrder(orderNumber) {
   return data ? rowToOrder(data) : null;
 }
 
-async function markOrderStatus(orderNumber, status) {
+/**
+ * Updates an order's status, and optionally other fields at the same time
+ * (currently just trackingLink, used when marking an order shipped) — one
+ * write instead of two separate updates.
+ */
+async function markOrderStatus(orderNumber, status, extra = {}) {
   const supabase = getSupabaseClient();
+  const patch = { status, updated_at: new Date().toISOString() };
+  if (extra.trackingLink !== undefined) patch.tracking_link = extra.trackingLink;
+
   const { data, error } = await supabase
     .from('orders')
-    .update({ status, updated_at: new Date().toISOString() })
+    .update(patch)
     .eq('order_number', orderNumber)
     .select()
     .maybeSingle();
@@ -128,9 +137,14 @@ async function listAllOrders() {
 
 /* ---------- Dashboard ---------- */
 
+// Fulfilment states that happen AFTER payment — all still count as "paid"
+// for revenue/stock purposes. status alone only ever moves forward:
+// pending -> paid -> (shipped | ready_for_pickup).
+const PAID_LIKE_STATUSES = ['paid', 'shipped', 'ready_for_pickup'];
+
 async function getDashboardData() {
   const orders = await listAllOrders();
-  const paidOrders = orders.filter(o => o.status === 'paid');
+  const paidOrders = orders.filter(o => PAID_LIKE_STATUSES.includes(o.status));
   const pendingOrders = orders.filter(o => o.status === 'pending');
   const failedOrders = orders.filter(o => o.status === 'failed');
 
@@ -164,6 +178,7 @@ async function getDashboardData() {
     orderNumber: o.orderNumber,
     status: o.status,
     paymentMethod: o.paymentMethod,
+    trackingLink: o.trackingLink,
     amount: o.amount,
     subtotal: o.subtotal,
     shippingFee: o.shippingFee,

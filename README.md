@@ -182,9 +182,11 @@ manual bank-transfer flow instead of a real payment page:
 2. In Supabase (SQL Editor), run:
    ```sql
    ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method text NOT NULL DEFAULT 'bayarcash';
+   ALTER TABLE orders ADD COLUMN IF NOT EXISTS tracking_link text;
    ```
-   This lets existing rows (all pre-Bayarcash, pre-this-feature orders)
-   default sensibly without breaking anything already in the table.
+   The first lets existing rows (all pre-Bayarcash, pre-this-feature orders)
+   default sensibly without breaking anything already in the table. The
+   second is used by the shipping/pickup fulfilment step below.
 3. **Same Resend domain-verification caveat as above applies here** — the
    invoice email is a customer-facing email, so until ritmarecords.com is
    a verified sending domain in Resend, it will silently fail to reach
@@ -196,6 +198,25 @@ Once a real Bayarcash merchant account is connected (see below), new
 orders automatically switch back to `payment_method: 'bayarcash'` and
 skip this flow entirely — no code changes needed, it's driven by whether
 `BAYARCASH_API_SECRET_KEY`/`BAYARCASH_PORTAL_KEY` are set.
+
+## Shipping & pickup fulfilment (post-payment status)
+
+Once an order is `paid` (however it got there — Bayarcash or the manual
+flow above), the dashboard shows one more action depending on how the
+customer chose to receive their order:
+
+- **Shipping orders** → **Mark Shipped** button. Prompts for a tracking
+  link (must be a full `http(s)://` URL), sets status to `shipped`, and
+  emails the customer a "Your order has shipped" email with a Track
+  Your Package button linking to it.
+- **Self-pickup orders** → **Ready for Pickup** button. No extra info
+  needed — sets status to `ready_for_pickup` and emails the customer.
+
+Both live in `netlify/functions/admin-update-order-fulfilment.js`, and
+both require the SQL migration above (`tracking_link` column) to be run
+first. `shipped` and `ready_for_pickup` still count as "paid" for
+revenue/stock stats on the Overview tab — they're fulfilment states
+that happen after payment, not a separate track.
 
 ## Turning on real Bayarcash payments
 

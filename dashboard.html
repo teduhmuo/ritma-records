@@ -422,10 +422,16 @@
       const styles = {
         paid: 'bg-green-100 text-green-700 border-green-200',
         pending: 'bg-amber-100 text-amber-700 border-amber-200',
-        failed: 'bg-red-100 text-red-700 border-red-200'
+        failed: 'bg-red-100 text-red-700 border-red-200',
+        shipped: 'bg-blue-100 text-blue-700 border-blue-200',
+        ready_for_pickup: 'bg-purple-100 text-purple-700 border-purple-200'
+      };
+      const labels = {
+        ready_for_pickup: 'Ready for Pickup'
       };
       const cls = styles[status] || 'bg-stone-100 text-stone-600 border-stone-200';
-      return `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${cls}">${escapeHtml(status)}</span>`;
+      const label = labels[status] || status;
+      return `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${cls}">${escapeHtml(label)}</span>`;
     }
 
     function paymentMethodLabel(method) {
@@ -456,6 +462,22 @@
       `).join('');
     }
 
+    function fulfilmentActionHtml(o, size) {
+      const btnCls = size === 'lg'
+        ? 'text-xs font-bold px-3 py-1.5 rounded-lg text-white transition'
+        : 'text-xs hover:underline mr-3';
+
+      if (o.status === 'paid' && o.deliveryMethod === 'shipping') {
+        const cls = size === 'lg' ? `${btnCls} bg-blue-600 hover:bg-blue-500` : `${btnCls} text-blue-700`;
+        return `<button onclick="markOrderShipped('${o.orderNumber}', event)" class="${cls}">Mark Shipped</button>`;
+      }
+      if (o.status === 'paid' && o.deliveryMethod === 'pickup') {
+        const cls = size === 'lg' ? `${btnCls} bg-purple-600 hover:bg-purple-500` : `${btnCls} text-purple-700`;
+        return `<button onclick="markOrderReadyForPickup('${o.orderNumber}', event)" class="${cls}">Ready for Pickup</button>`;
+      }
+      return '';
+    }
+
     let LAST_ORDERS = [];
 
     function renderOrdersTable(orders) {
@@ -475,7 +497,7 @@
           <td class="px-5 py-3 text-right">
             ${o.status === 'pending' && o.paymentMethod === 'bank_transfer'
               ? `<button onclick="markOrderPaid('${o.orderNumber}', event)" class="text-xs text-green-700 hover:underline mr-3">Mark Paid</button>`
-              : ''}
+              : fulfilmentActionHtml(o, 'sm')}
             <button onclick="openOrderModal('${o.orderNumber}')" class="text-xs text-orange-600 hover:underline">View</button>
           </td>
         </tr>
@@ -483,6 +505,9 @@
     }
 
     function deliveryDetailHtml(o) {
+      const trackingHtml = o.trackingLink
+        ? `<p class="mt-2"><a href="${o.trackingLink}" target="_blank" rel="noopener" class="text-blue-600 hover:underline text-xs font-bold">Tracking link →</a></p>`
+        : '';
       if (o.deliveryMethod === 'shipping' && o.shippingAddress) {
         const a = o.shippingAddress;
         return `
@@ -491,6 +516,7 @@
             ${escapeHtml(a.line1)}${a.line2 ? '<br>' + escapeHtml(a.line2) : ''}<br>
             ${escapeHtml(a.postcode)} ${escapeHtml(a.city)}, ${escapeHtml(a.state)}
           </p>
+          ${trackingHtml}
         `;
       }
       return `
@@ -509,7 +535,7 @@
           <div>${statusBadge(o.status)} ${paymentMethodLabel(o.paymentMethod)} <span class="text-stone-400 ml-2">${new Date(o.createdAt).toLocaleString('en-MY')}</span></div>
           ${o.status === 'pending' && o.paymentMethod === 'bank_transfer'
             ? `<button onclick="markOrderPaid('${o.orderNumber}', event)" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-500 transition">Mark as Paid</button>`
-            : ''}
+            : fulfilmentActionHtml(o, 'lg')}
         </div>
 
         <div class="mb-4">
@@ -568,6 +594,45 @@
         console.error('[Ritma] markOrderPaid failed:', err);
         alert('Something went wrong — please try again.');
       }
+    }
+
+    async function updateOrderFulfilment(orderNumber, action, trackingLink) {
+      try {
+        const res = await fetch('/.netlify/functions/admin-update-order-fulfilment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body: JSON.stringify({ orderNumber, action, trackingLink })
+        });
+        if (res.status === 401) return signOutAndShowGate();
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          alert(data.error || 'Could not update this order.');
+          return;
+        }
+        await loadOverview();
+        closeOrderModal();
+      } catch (err) {
+        console.error('[Ritma] updateOrderFulfilment failed:', err);
+        alert('Something went wrong — please try again.');
+      }
+    }
+
+    function markOrderShipped(orderNumber, evt) {
+      if (evt) evt.stopPropagation();
+      const trackingLink = prompt(`Tracking link for ${orderNumber}:\n\n(Paste the full URL, e.g. https://track.easyparcel.my/...)`);
+      if (trackingLink === null) return; // cancelled
+      const trimmed = trackingLink.trim();
+      if (!/^https?:\/\//i.test(trimmed)) {
+        alert('Please enter a valid link starting with http:// or https://');
+        return;
+      }
+      updateOrderFulfilment(orderNumber, 'ship', trimmed);
+    }
+
+    function markOrderReadyForPickup(orderNumber, evt) {
+      if (evt) evt.stopPropagation();
+      if (!confirm(`Mark ${orderNumber} as ready for pickup? This emails the customer.`)) return;
+      updateOrderFulfilment(orderNumber, 'ready_for_pickup');
     }
 
     function closeOrderModal() {
