@@ -157,4 +157,39 @@ async function sendInvoiceEmail(order) {
   return sendEmail({ to: order.payer.email, subject: `Invoice ${order.orderNumber} — Ritma Records`, html });
 }
 
-module.exports = { sendOrderConfirmationEmail, sendAdminNotificationEmail, sendInvoiceEmail };
+async function sendAdminPendingBankTransferEmail(order) {
+  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL;
+  if (!adminEmail) {
+    console.warn('[Ritma] ADMIN_NOTIFICATION_EMAIL not set — skipping pending-order admin notification.');
+    return { sent: false, reason: 'not_configured' };
+  }
+  const html = `
+    <div style="font-family: Arial, sans-serif; color:#1c1917; max-width:480px; margin:0 auto;">
+      <h2 style="color:#ea580c; margin-bottom:4px;">New order awaiting bank transfer: ${order.orderNumber}</h2>
+      <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:12px; margin:12px 0; font-size:13px; color:#1e40af;">
+        <strong>Not paid yet.</strong> The buyer has been sent an invoice with your bank details. Check Maybank for a transfer referencing
+        <strong>${order.orderNumber}</strong>, then mark it paid on the dashboard once confirmed.
+      </div>
+      <table style="width:100%; border-collapse:collapse; margin:16px 0; font-size:14px;">
+        ${itemsHtmlRows(order.items)}
+        ${totalsHtmlRows(order)}
+      </table>
+      <p style="margin:16px 0 4px;"><strong>Customer</strong></p>
+      <p style="margin:0; color:#44403c;">
+        ${escapeHtml(order.payer.name)}<br>
+        ${escapeHtml(order.payer.phone)}<br>
+        ${escapeHtml(order.payer.email)}
+      </p>
+      ${deliveryHtml(order)}
+      <p style="margin-top:24px;"><a href="https://ritmarecords.com/dashboard" style="color:#ea580c;">Open dashboard to mark paid →</a></p>
+    </div>
+  `;
+  return sendEmail({
+    to: adminEmail,
+    subject: `Awaiting payment: ${order.orderNumber} — ${formatMYR(order.amount)}`,
+    html,
+    replyTo: order.payer.email
+  });
+}
+
+module.exports = { sendOrderConfirmationEmail, sendAdminNotificationEmail, sendInvoiceEmail, sendAdminPendingBankTransferEmail };

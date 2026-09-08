@@ -11,14 +11,18 @@
    Ritma Records doesn't have a Bayarcash merchant account yet. Until it
    does, every order falls back to manual bank transfer: the order is
    saved with paymentMethod 'bank_transfer' and status 'pending', an
-   invoice email (bank details + order number as reference) is sent via
-   sendInvoiceEmail (lib/order-emails.js), and the response tells the
-   frontend to show a "check your email" confirmation instead of
-   redirecting to a payment page. The admin then manually matches the
-   incoming transfer and clicks "Mark as Paid" on the dashboard, which
-   calls admin-mark-order-paid.js — that mirrors what the Bayarcash
-   webhook does (decrement stock, send the normal receipt/notification
-   emails), just triggered by a person instead of a payment gateway.
+   invoice email (bank details + order number as reference) is sent to
+   the buyer via sendInvoiceEmail, and a separate "awaiting payment"
+   notification is sent to ADMIN_NOTIFICATION_EMAIL via
+   sendAdminPendingBankTransferEmail (both in lib/order-emails.js) — the
+   admin doesn't have to keep checking the dashboard for new orders. The
+   response tells the frontend to show a "check your email" confirmation
+   instead of redirecting to a payment page. The admin then manually
+   matches the incoming transfer and clicks "Mark as Paid" on the
+   dashboard, which calls admin-mark-order-paid.js — that mirrors what
+   the Bayarcash webhook does (decrement stock, send the normal
+   receipt/notification emails), just triggered by a person instead of a
+   payment gateway.
 
    TO GO LIVE LATER:
    1. Sign up for a Bayarcash merchant account: https://bayar.cash
@@ -61,7 +65,7 @@
 const crypto = require('crypto');
 const { checkStockAvailable, saveOrder } = require('./lib/inventory');
 const { getProduct } = require('./lib/catalog');
-const { sendInvoiceEmail } = require('./lib/order-emails');
+const { sendInvoiceEmail, sendAdminPendingBankTransferEmail } = require('./lib/order-emails');
 
 const SHIPPING_FEE = 15; // RM, flat rate nationwide — see checkout.html
 
@@ -165,10 +169,13 @@ exports.handler = async (event) => {
     //      erroring, and let the customer know it's pending manual review.
     if (!bayarcashReady) {
       try {
-        const invoiceResult = await sendInvoiceEmail(orderRecord);
-        console.log(`[Ritma] Order ${orderNumber} invoice email:`, invoiceResult);
+        const [invoiceResult, adminResult] = await Promise.all([
+          sendInvoiceEmail(orderRecord),
+          sendAdminPendingBankTransferEmail(orderRecord)
+        ]);
+        console.log(`[Ritma] Order ${orderNumber} invoice/admin emails:`, { invoiceResult, adminResult });
       } catch (emailErr) {
-        console.error(`[Ritma] Order ${orderNumber} invoice email failed:`, emailErr);
+        console.error(`[Ritma] Order ${orderNumber} invoice/admin email failed:`, emailErr);
       }
       return {
         statusCode: 200,
